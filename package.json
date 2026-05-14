@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/fardinzam/flowforge#readme",
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "idb": "^8.0.3",
     "nanoid": "^5.1.11",
