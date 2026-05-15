@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { WorkflowEditor } from "@/components/editor/workflow-editor";
 import { WorkflowHeader } from "@/components/workflows/workflow-header";
 import { requireUser } from "@/server/auth/session";
 import {
+  emptyWorkflowGraph,
   getWorkflowForUser,
   WorkflowNotFoundError,
 } from "@/server/workflows/service";
@@ -38,7 +40,7 @@ export default async function WorkflowDetailPage({
   return (
     <section>
       <WorkflowHeader workflow={workflow} />
-      <div aria-label="Workflow canvas">Canvas placeholder</div>
+      <WorkflowEditor initialGraph={emptyWorkflowGraph} />
     </section>
   );
 }

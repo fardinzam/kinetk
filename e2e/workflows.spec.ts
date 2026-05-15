@@ -20,7 +20,6 @@ test("creates and opens a workflow", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: workflowName })).toBeVisible();
   await expect(page.getByLabel("Sync status")).toContainText("ready");
-  await expect(page.getByLabel("Workflow canvas")).toContainText(
-    "Canvas placeholder",
-  );
+  await expect(page.getByLabel("Workflow editor")).toBeVisible();
+  await expect(page.getByLabel("Workflow canvas")).toBeVisible();
 });
