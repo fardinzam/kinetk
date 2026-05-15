@@ -13,6 +13,19 @@ test("signs up, signs out, and signs in", async ({ page }) => {
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/workflows$/);
   await expect(page.getByRole("heading", { name: "Workflows" })).toBeVisible();
+  await expect(async () => {
+    const response = await page.request.get("/api/workspaces");
+    const body = (await response.json()) as {
+      workspaces: Array<{ name: string; role: string }>;
+    };
+
+    expect(response.ok()).toBe(true);
+    expect(body.workspaces).toHaveLength(1);
+    expect(body.workspaces[0]).toMatchObject({
+      name: `${email.split("@")[0]}'s workspace`,
+      role: "owner",
+    });
+  }).toPass();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/sign-in$/);

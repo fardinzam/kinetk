@@ -6,6 +6,13 @@ import { serverEnv } from "@/server/env";
 
 const { Pool } = pg;
 
+export type Queryable = {
+  query<T extends pg.QueryResultRow>(
+    text: string,
+    values?: unknown[],
+  ): Promise<pg.QueryResult<T>>;
+};
+
 let pool: pg.Pool | undefined;
 
 export function getPool(): pg.Pool {
