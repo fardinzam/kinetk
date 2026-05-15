@@ -55,13 +55,10 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName }: Prop
         },
       });
 
-      const snapshot = await loadSnapshot(db, workflowId);
-      const pending = await queueRef.current.getPendingEvents();
-
-      let graph = snapshot ?? EMPTY_GRAPH;
-      for (const event of pending) {
-        graph = applyWorkflowEvent({ name: workflowName, graph }, event).graph;
-      }
+      // The snapshot is always up-to-date — it's saved after every local edit.
+      // Pending events are preserved for server sync (Phase 6), not for
+      // graph reconstruction, so we do not replay them here.
+      const graph = (await loadSnapshot(db, workflowId)) ?? EMPTY_GRAPH;
 
       if (cancelled) return;
 
