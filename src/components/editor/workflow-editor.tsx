@@ -10,7 +10,6 @@ import { Canvas } from "./canvas";
 import {
   addNode,
   connectNodes,
-  createEditorState,
   deleteEdge,
   deleteSelectedNode,
   moveNode,
@@ -22,6 +21,7 @@ import {
 import { EditorToolbar } from "./editor-toolbar";
 import { NodeConfigPanel } from "./node-config-panel";
 import { NodePalette } from "./node-palette";
+import { useEditorHistory } from "./use-editor-history";
 
 type WorkflowEditorProps = {
   initialGraph: WorkflowGraph;
@@ -37,7 +37,16 @@ export function WorkflowEditor({
   initialGraph,
   onLocalEvent,
 }: WorkflowEditorProps) {
-  const [state, setState] = useState(() => createEditorState(initialGraph));
+  const {
+    state,
+    applyState,
+    applyGraphChange,
+    snapshotGraph,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useEditorHistory(initialGraph);
   const [connectingFromNodeId, setConnectingFromNodeId] = useState<string | null>(
     null,
   );
@@ -64,7 +73,8 @@ export function WorkflowEditor({
       return;
     }
 
-    setState((current) => selectNode(current, nodeId));
+    snapshotGraph();
+    applyState((current) => selectNode(current, nodeId));
     setDragState({
       nodeId,
       offset: {
@@ -82,7 +92,7 @@ export function WorkflowEditor({
     const activeDrag = dragState;
 
     function handlePointerMove(event: PointerEvent) {
-      setState((current) =>
+      applyState((current) =>
         moveNode(current, activeDrag.nodeId, {
           x:
             (event.clientX - activeDrag.offset.x - current.graph.viewport.x) /
@@ -95,7 +105,7 @@ export function WorkflowEditor({
     }
 
     function handlePointerUp() {
-      setState((current) => {
+      applyState((current) => {
         const node = current.graph.nodes.find((n) => n.id === activeDrag.nodeId);
         if (node) {
           onLocalEventRef.current?.({
@@ -118,7 +128,7 @@ export function WorkflowEditor({
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [dragState]);
+  }, [dragState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section aria-label="Workflow editor">
@@ -140,16 +150,20 @@ export function WorkflowEditor({
         canAddWebhookTrigger={
           !state.graph.nodes.some((node) => node.type === "webhook_trigger")
         }
-        onAddNode={(type) => setState((current) => addNode(current, type))}
+        onAddNode={(type) => applyGraphChange((current) => addNode(current, type))}
       />
       <EditorToolbar
         canDelete={state.selectedNodeId !== null}
+        canRedo={canRedo}
+        canUndo={canUndo}
         zoom={state.graph.viewport.zoom}
         onDeleteSelected={() =>
-          setState((current) => deleteSelectedNode(current))
+          applyGraphChange((current) => deleteSelectedNode(current))
         }
-        onPan={(delta) => setState((current) => panViewport(current, delta))}
-        onZoom={(zoom) => setState((current) => zoomViewport(current, zoom))}
+        onPan={(delta) => applyState((current) => panViewport(current, delta))}
+        onRedo={redo}
+        onUndo={undo}
+        onZoom={(zoom) => applyState((current) => zoomViewport(current, zoom))}
       />
       <Canvas
         connectingFromNodeId={connectingFromNodeId}
@@ -161,13 +175,13 @@ export function WorkflowEditor({
             return;
           }
 
-          setState((current) =>
+          applyGraphChange((current) =>
             connectNodes(current, connectingFromNodeId, nodeId),
           );
           setConnectingFromNodeId(null);
         }}
         onDeleteEdge={(edgeId) =>
-          setState((current) => deleteEdge(current, edgeId))
+          applyGraphChange((current) => deleteEdge(current, edgeId))
         }
         onNodePointerDown={handleNodePointerDown}
       />
@@ -178,7 +192,7 @@ export function WorkflowEditor({
             return;
           }
 
-          setState((current) => updateSelectedNodeConfig(current, config));
+          applyGraphChange((current) => updateSelectedNodeConfig(current, config));
           onLocalEvent?.({
             clientEventId: `local-${Date.now()}`,
             type: "node_updated",
