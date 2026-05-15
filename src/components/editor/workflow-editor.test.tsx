@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { WorkflowEditor } from "./workflow-editor";
+import type { WorkflowEvent } from "@/domain/workflows/events";
 import type { WorkflowGraph } from "@/domain/workflows/types";
 
 const seededGraph: WorkflowGraph = {
@@ -30,6 +31,77 @@ const seededGraph: WorkflowGraph = {
 };
 
 describe("WorkflowEditor", () => {
+  it("shows validation errors without blocking edits", () => {
+    render(
+      <WorkflowEditor
+        initialGraph={{ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }}
+      />,
+    );
+
+    expect(screen.getByText("invalid_trigger_count")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add log" }));
+
+    expect(screen.getByRole("button", { name: "log log_1" })).toBeInTheDocument();
+    expect(screen.getByText("invalid_trigger_count")).toBeInTheDocument();
+  });
+
+  it("builds a valid trigger to transform to log workflow", () => {
+    render(
+      <WorkflowEditor
+        initialGraph={{ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add webhook trigger" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add transform json" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add log" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Connect from webhook_trigger_1" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Connect to transform_json_1" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Connect from transform_json_1" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Connect to log_1" }));
+
+    expect(screen.getByLabelText("edge webhook_trigger_1 to transform_json_1"))
+      .toBeInTheDocument();
+    expect(screen.getByLabelText("edge transform_json_1 to log_1"))
+      .toBeInTheDocument();
+    expect(screen.getByText("Graph is executable.")).toBeInTheDocument();
+  });
+
+  it("edits selected node config and emits a node_updated event", () => {
+    const events: WorkflowEvent[] = [];
+    render(
+      <WorkflowEditor
+        initialGraph={seededGraph}
+        onLocalEvent={(event) => events.push(event)}
+      />,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "log log" }), {
+      pointerId: 1,
+      clientX: 360,
+      clientY: 72,
+    });
+    fireEvent.change(screen.getByLabelText("Log label"), {
+      target: { value: "Updated audit log" },
+    });
+
+    expect(screen.getByDisplayValue("Updated audit log")).toBeInTheDocument();
+    expect(events.at(-1)).toMatchObject({
+      type: "node_updated",
+      payload: {
+        nodeId: "log",
+        config: { label: "Updated audit log" },
+      },
+    });
+  });
+
   it("adds nodes from the palette and prevents duplicate webhook triggers", () => {
     render(<WorkflowEditor initialGraph={seededGraph} />);
 

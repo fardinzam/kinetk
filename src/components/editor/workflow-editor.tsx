@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import type { WorkflowEvent } from "@/domain/workflows/events";
+import { validateExecutableGraph } from "@/domain/workflows/validation";
 import type { WorkflowGraph, WorkflowPosition } from "@/domain/workflows/types";
 
 import { Canvas } from "./canvas";
@@ -14,13 +16,16 @@ import {
   moveNode,
   panViewport,
   selectNode,
+  updateSelectedNodeConfig,
   zoomViewport,
 } from "./editor-state";
 import { EditorToolbar } from "./editor-toolbar";
+import { NodeConfigPanel } from "./node-config-panel";
 import { NodePalette } from "./node-palette";
 
 type WorkflowEditorProps = {
   initialGraph: WorkflowGraph;
+  onLocalEvent?(event: WorkflowEvent): void;
 };
 
 type DragState = {
@@ -28,7 +33,10 @@ type DragState = {
   offset: WorkflowPosition;
 };
 
-export function WorkflowEditor({ initialGraph }: WorkflowEditorProps) {
+export function WorkflowEditor({
+  initialGraph,
+  onLocalEvent,
+}: WorkflowEditorProps) {
   const [state, setState] = useState(() => createEditorState(initialGraph));
   const [connectingFromNodeId, setConnectingFromNodeId] = useState<string | null>(
     null,
@@ -38,6 +46,13 @@ export function WorkflowEditor({ initialGraph }: WorkflowEditorProps) {
   const nodesById = useMemo(
     () => new Map(state.graph.nodes.map((node) => [node.id, node])),
     [state.graph.nodes],
+  );
+  const selectedNode = state.selectedNodeId
+    ? nodesById.get(state.selectedNodeId) ?? null
+    : null;
+  const validationResult = useMemo(
+    () => validateExecutableGraph(state.graph),
+    [state.graph],
   );
 
   function handleNodePointerDown(nodeId: string, pointer: WorkflowPosition) {
@@ -92,6 +107,20 @@ export function WorkflowEditor({ initialGraph }: WorkflowEditorProps) {
 
   return (
     <section aria-label="Workflow editor">
+      <section aria-label="Graph validation">
+        {validationResult.valid ? (
+          <p>Graph is executable.</p>
+        ) : (
+          <ul>
+            {validationResult.errors.map((error) => (
+              <li key={`${error.code}-${error.nodeId ?? error.edgeId ?? ""}`}>
+                <strong>{error.code}</strong>
+                <span>{error.message}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <NodePalette
         canAddWebhookTrigger={
           !state.graph.nodes.some((node) => node.type === "webhook_trigger")
@@ -126,6 +155,26 @@ export function WorkflowEditor({ initialGraph }: WorkflowEditorProps) {
           setState((current) => deleteEdge(current, edgeId))
         }
         onNodePointerDown={handleNodePointerDown}
+      />
+      <NodeConfigPanel
+        node={selectedNode}
+        onChange={(config) => {
+          if (!selectedNode) {
+            return;
+          }
+
+          setState((current) => updateSelectedNodeConfig(current, config));
+          onLocalEvent?.({
+            clientEventId: `local-${Date.now()}`,
+            type: "node_updated",
+            eventSchemaVersion: 1,
+            payload: {
+              nodeId: selectedNode.id,
+              config,
+            },
+            createdAt: new Date().toISOString(),
+          });
+        }}
       />
     </section>
   );

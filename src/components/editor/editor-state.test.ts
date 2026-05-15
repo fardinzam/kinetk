@@ -8,6 +8,7 @@ import {
   moveNode,
   panViewport,
   selectNode,
+  updateSelectedNodeConfig,
   zoomViewport,
 } from "./editor-state";
 import type { WorkflowGraph } from "@/domain/workflows/types";
@@ -114,6 +115,17 @@ describe("editor state", () => {
     const withoutEdge = deleteEdge(connected, "edge_trigger_log_1");
 
     expect(withoutEdge.graph.edges).toEqual([]);
+  });
+
+  it("updates selected node config", () => {
+    const state = updateSelectedNodeConfig(
+      { graph, selectedNodeId: "log" },
+      { label: "Updated log" },
+    );
+
+    expect(state.graph.nodes.find((node) => node.id === "log")).toMatchObject({
+      config: { label: "Updated log" },
+    });
   });
 
   it("pans and zooms the viewport", () => {

@@ -1,4 +1,5 @@
 import type { NodeType } from "@/domain/workflows/node-configs";
+import { nodeConfigSchema } from "@/domain/workflows/schemas";
 import type {
   WorkflowGraph,
   WorkflowNode,
@@ -190,6 +191,37 @@ export function deleteEdge(state: EditorState, edgeId: string): EditorState {
     graph: {
       ...state.graph,
       edges: state.graph.edges.filter((edge) => edge.id !== edgeId),
+    },
+  };
+}
+
+export function updateSelectedNodeConfig(
+  state: EditorState,
+  config: unknown,
+): EditorState {
+  if (!state.selectedNodeId) {
+    return state;
+  }
+
+  return {
+    ...state,
+    graph: {
+      ...state.graph,
+      nodes: state.graph.nodes.map((node) => {
+        if (node.id !== state.selectedNodeId) {
+          return node;
+        }
+
+        const parsed = nodeConfigSchema.parse({
+          type: node.type,
+          config,
+        });
+
+        return {
+          ...node,
+          config: parsed.config,
+        } as WorkflowNode;
+      }),
     },
   };
 }
