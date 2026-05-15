@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 
-import { WorkflowEditor } from "@/components/editor/workflow-editor";
 import { WorkflowHeader } from "@/components/workflows/workflow-header";
+import { WorkflowEditorWithPersistence } from "@/components/workflows/workflow-editor-with-persistence";
 import { requireUser } from "@/server/auth/session";
 import {
-  emptyWorkflowGraph,
   getWorkflowForUser,
   WorkflowNotFoundError,
 } from "@/server/workflows/service";
@@ -40,7 +39,10 @@ export default async function WorkflowDetailPage({
   return (
     <section>
       <WorkflowHeader workflow={workflow} />
-      <WorkflowEditor initialGraph={emptyWorkflowGraph} />
+      <WorkflowEditorWithPersistence
+        workflowId={workflowId}
+        workflowName={workflow.name}
+      />
     </section>
   );
 }
