@@ -4,7 +4,6 @@ import {
   conditionNodeConfigSchema,
   httpRequestNodeConfigSchema,
   logNodeConfigSchema,
-  nodeTypeSchema,
   transformJsonNodeConfigSchema,
   webhookTriggerNodeConfigSchema,
 } from "./node-configs";
@@ -46,28 +45,33 @@ export const nodeConfigSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const workflowNodeSchema = z
-  .object({
-    id: z.string().min(1),
-    type: nodeTypeSchema,
-    position: workflowPositionSchema,
-    config: z.unknown(),
-  })
-  .superRefine((node, context) => {
-    const parsed = nodeConfigSchema.safeParse({
-      type: node.type,
-      config: node.config,
-    });
+const workflowNodeBaseSchema = z.object({
+  id: z.string().min(1),
+  position: workflowPositionSchema,
+});
 
-    if (!parsed.success) {
-      parsed.error.issues.forEach((issue) => {
-        context.addIssue({
-          ...issue,
-          path: ["config", ...issue.path.slice(1)],
-        });
-      });
-    }
-  });
+export const workflowNodeSchema = z.discriminatedUnion("type", [
+  workflowNodeBaseSchema.extend({
+    type: z.literal("webhook_trigger"),
+    config: webhookTriggerNodeConfigSchema,
+  }),
+  workflowNodeBaseSchema.extend({
+    type: z.literal("transform_json"),
+    config: transformJsonNodeConfigSchema,
+  }),
+  workflowNodeBaseSchema.extend({
+    type: z.literal("condition"),
+    config: conditionNodeConfigSchema,
+  }),
+  workflowNodeBaseSchema.extend({
+    type: z.literal("http_request"),
+    config: httpRequestNodeConfigSchema,
+  }),
+  workflowNodeBaseSchema.extend({
+    type: z.literal("log"),
+    config: logNodeConfigSchema,
+  }),
+]);
 
 export const workflowEdgeSchema = z.object({
   id: z.string().min(1),
