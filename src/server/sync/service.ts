@@ -3,7 +3,7 @@ import "server-only";
 import type { WorkflowEvent } from "@/domain/workflows/events";
 import { migrateWorkflowEvent } from "@/domain/workflows/migrations";
 import { applyWorkflowEvent } from "@/domain/workflows/reducer";
-import { getPool, withTransaction, type Queryable } from "@/server/db/pool";
+import { withTransaction } from "@/server/db/pool";
 import { createWorkflowQueries } from "@/server/workflows/queries";
 
 import {
@@ -37,7 +37,6 @@ export class WorkflowNotFoundForSyncError extends WorkflowSyncError {}
 
 export async function syncWorkflowEvents(
   input: SyncInput,
-  db: Queryable = getPool(),
 ): Promise<SyncOutput> {
   return withTransaction(async (txDb) => {
     const workflowQueries = createWorkflowQueries(txDb);
