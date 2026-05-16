@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type {
   ConditionNodeConfig,
   HttpRequestNodeConfig,
@@ -46,6 +48,7 @@ export function NodeConfigPanel({ node, workspaceId, onChange }: NodeConfigPanel
       ) : null}
       {node.type === "http_request" ? (
         <HttpRequestFields
+          key={node.id}
           config={node.config as HttpRequestNodeConfig}
           workspaceId={workspaceId}
           onChange={onChange}
@@ -153,22 +156,40 @@ function HttpRequestFields({
   workspaceId?: string;
   onChange(config: HttpRequestNodeConfig): void;
 }) {
-  const headerEntries = Object.entries(config.headers ?? {});
+  // Local draft state allows rows with an empty secretId (not yet selected).
+  // Only headers with both a non-empty name and secretId are passed to onChange
+  // so Zod validation in updateSelectedNodeConfig never sees incomplete rows.
+  const [draftHeaders, setDraftHeaders] = useState<Record<string, SecretReference>>(
+    () => config.headers ?? {},
+  );
+
+  const headerEntries = Object.entries(draftHeaders);
+
+  function persistValid(headers: Record<string, SecretReference>) {
+    const valid = Object.fromEntries(
+      Object.entries(headers).filter(([name, ref]) => name.trim() !== "" && ref.secretId !== ""),
+    );
+    onChange({ ...config, headers: valid });
+  }
 
   function setHeader(name: string, ref: SecretReference) {
-    onChange({ ...config, headers: { ...config.headers, [name]: ref } });
+    const updated = { ...draftHeaders, [name]: ref };
+    setDraftHeaders(updated);
+    persistValid(updated);
   }
 
   function removeHeader(name: string) {
     const rest = Object.fromEntries(
-      Object.entries(config.headers ?? {}).filter(([k]) => k !== name),
+      Object.entries(draftHeaders).filter(([k]) => k !== name),
     );
-    onChange({ ...config, headers: rest });
+    setDraftHeaders(rest);
+    persistValid(rest);
   }
 
   function addHeader() {
+    // Only update local draft — don't call onChange since secretId is empty
     const name = `Header-${headerEntries.length + 1}`;
-    setHeader(name, { secretId: "", injectAs: "raw" });
+    setDraftHeaders((prev) => ({ ...prev, [name]: { secretId: "", injectAs: "raw" } }));
   }
 
   return (
@@ -218,8 +239,12 @@ function HttpRequestFields({
             <input
               aria-label="Header name"
               onChange={(e) => {
-                removeHeader(name);
-                setHeader(e.target.value, ref);
+                const newName = e.target.value;
+                const updated = Object.fromEntries(
+                  Object.entries(draftHeaders).map(([k, v]) => [k === name ? newName : k, v]),
+                );
+                setDraftHeaders(updated);
+                persistValid(updated);
               }}
               type="text"
               value={name}
