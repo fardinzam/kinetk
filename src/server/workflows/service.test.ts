@@ -8,8 +8,11 @@ import {
 import type {
   CreateWorkflowRecord,
   WorkflowQueries,
+  WorkflowRecord,
   WorkflowSummary,
 } from "./queries";
+
+const EMPTY_GRAPH = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } };
 
 function createWorkflowQueries(): WorkflowQueries & {
   workflows: WorkflowSummary[];
@@ -51,6 +54,11 @@ function createWorkflowQueries(): WorkflowQueries & {
     },
     async findWorkflowById(workflowId) {
       return workflows.find((workflow) => workflow.id === workflowId) ?? null;
+    },
+    async findWorkflowWithGraphById(workflowId): Promise<WorkflowRecord | null> {
+      const workflow = workflows.find((w) => w.id === workflowId);
+      if (!workflow) return null;
+      return { ...workflow, graph: EMPTY_GRAPH };
     },
   };
 }

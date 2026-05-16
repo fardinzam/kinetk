@@ -19,11 +19,14 @@ export type WorkflowSummary = {
   updatedAt: Date;
 };
 
+export type WorkflowRecord = WorkflowSummary & { graph: WorkflowGraph };
+
 export type WorkflowQueries = {
   userCanAccessWorkspace(userId: string, workspaceId: string): Promise<boolean>;
   createWorkflow(input: CreateWorkflowRecord): Promise<WorkflowSummary>;
   listWorkflowsForWorkspace(workspaceId: string): Promise<WorkflowSummary[]>;
   findWorkflowById(workflowId: string): Promise<WorkflowSummary | null>;
+  findWorkflowWithGraphById(workflowId: string): Promise<WorkflowRecord | null>;
 };
 
 function mapWorkflowRow(row: {
@@ -139,6 +142,31 @@ export function createWorkflowQueries(db: Queryable = getPool()): WorkflowQuerie
       const row = result.rows[0];
 
       return row ? mapWorkflowRow(row) : null;
+    },
+    async findWorkflowWithGraphById(workflowId) {
+      const result = await db.query<{
+        id: string;
+        workspace_id: string;
+        name: string;
+        schema_version: number;
+        version: number;
+        created_at: Date;
+        updated_at: Date;
+        current_state_json: WorkflowGraph;
+      }>(
+        `
+          select id, workspace_id, name, schema_version, version,
+                 created_at, updated_at, current_state_json
+          from public.workflows
+          where id = $1 and deleted_at is null
+          limit 1
+        `,
+        [workflowId],
+      );
+      const row = result.rows[0];
+      if (!row) return null;
+
+      return { ...mapWorkflowRow(row), graph: row.current_state_json };
     },
   };
 }

@@ -26,9 +26,10 @@ const EMPTY_GRAPH: WorkflowGraph = {
 type Props = {
   workflowId: string;
   workflowName: string;
+  serverGraph: WorkflowGraph;
 };
 
-export function WorkflowEditorWithPersistence({ workflowId, workflowName }: Props) {
+export function WorkflowEditorWithPersistence({ workflowId, workflowName, serverGraph }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialGraph, setInitialGraph] = useState<WorkflowGraph>(EMPTY_GRAPH);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("saved_locally");
@@ -37,6 +38,7 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName }: Prop
   const queueRef = useRef<LocalEventQueue | null>(null);
   const graphRef = useRef<WorkflowGraph>(EMPTY_GRAPH);
   const syncDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const serverGraphRef = useRef(serverGraph);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,9 +59,9 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName }: Prop
         },
       });
 
-      // The snapshot is always up-to-date — it's saved after every local edit.
-      // Pending events are preserved for server sync, not for graph reconstruction.
-      const graph = (await loadSnapshot(db, workflowId)) ?? EMPTY_GRAPH;
+      // Prefer the local IndexedDB snapshot (always current after edits).
+      // Fall back to the server graph so other browsers see synced state.
+      const graph = (await loadSnapshot(db, workflowId)) ?? serverGraphRef.current;
 
       if (cancelled) return;
 
