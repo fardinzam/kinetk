@@ -42,3 +42,18 @@ export async function removePendingEvent(
 
   await tx.done;
 }
+
+export async function clearPendingEvents(
+  db: FlowForgeDatabase,
+  workflowId: string,
+): Promise<void> {
+  const tx = db.transaction("pending_events", "readwrite");
+  let cursor = await tx.store.index("by_workflow").openCursor(workflowId);
+
+  while (cursor) {
+    await cursor.delete();
+    cursor = await cursor.continue();
+  }
+
+  await tx.done;
+}

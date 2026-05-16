@@ -21,3 +21,10 @@ export async function loadSnapshot(
   const record = await db.get("workflow_snapshots", workflowId);
   return record?.graph ?? null;
 }
+
+export async function deleteSnapshot(
+  db: FlowForgeDatabase,
+  workflowId: string,
+): Promise<void> {
+  await db.delete("workflow_snapshots", workflowId);
+}
