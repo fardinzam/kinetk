@@ -77,13 +77,14 @@ export function WorkflowEditor({
       return;
     }
 
+    const { zoom, x: vpX, y: vpY } = state.graph.viewport;
     snapshotGraph();
     applyState((current) => selectNode(current, nodeId));
     setDragState({
       nodeId,
       offset: {
-        x: pointer.x - node.position.x,
-        y: pointer.y - node.position.y,
+        x: pointer.x - node.position.x * zoom - vpX,
+        y: pointer.y - node.position.y * zoom - vpY,
       },
     });
   }
