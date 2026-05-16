@@ -29,10 +29,11 @@ const EMPTY_GRAPH: WorkflowGraph = {
 type Props = {
   workflowId: string;
   workflowName: string;
+  workspaceId: string;
   serverGraph: WorkflowGraph;
 };
 
-export function WorkflowEditorWithPersistence({ workflowId, workflowName, serverGraph }: Props) {
+export function WorkflowEditorWithPersistence({ workflowId, workflowName, workspaceId, serverGraph }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialGraph, setInitialGraph] = useState<WorkflowGraph>(EMPTY_GRAPH);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("saved_locally");
@@ -154,6 +155,7 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, server
       )}
       <WorkflowEditor
         initialGraph={initialGraph}
+        workspaceId={workspaceId}
         onLocalEvent={handleLocalEvent}
       />
     </section>

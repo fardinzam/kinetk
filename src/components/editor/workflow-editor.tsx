@@ -27,6 +27,7 @@ import { useEditorHistory } from "./use-editor-history";
 
 type WorkflowEditorProps = {
   initialGraph: WorkflowGraph;
+  workspaceId?: string;
   onLocalEvent?(event: WorkflowEvent): void;
 };
 
@@ -37,6 +38,7 @@ type DragState = {
 
 export function WorkflowEditor({
   initialGraph,
+  workspaceId,
   onLocalEvent,
 }: WorkflowEditorProps) {
   const {
@@ -233,6 +235,7 @@ export function WorkflowEditor({
       />
       <NodeConfigPanel
         node={selectedNode}
+        workspaceId={workspaceId}
         onChange={(config) => {
           if (!selectedNode) {
             return;

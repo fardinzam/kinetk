@@ -2,16 +2,20 @@ import type {
   ConditionNodeConfig,
   HttpRequestNodeConfig,
   LogNodeConfig,
+  SecretReference,
   TransformJsonNodeConfig,
 } from "@/domain/workflows/node-configs";
 import type { WorkflowNode } from "@/domain/workflows/types";
 
+import { SecretPicker } from "./secret-picker";
+
 type NodeConfigPanelProps = {
   node: WorkflowNode | null;
+  workspaceId?: string;
   onChange(config: unknown): void;
 };
 
-export function NodeConfigPanel({ node, onChange }: NodeConfigPanelProps) {
+export function NodeConfigPanel({ node, workspaceId, onChange }: NodeConfigPanelProps) {
   if (!node) {
     return (
       <aside aria-label="Node config">
@@ -43,6 +47,7 @@ export function NodeConfigPanel({ node, onChange }: NodeConfigPanelProps) {
       {node.type === "http_request" ? (
         <HttpRequestFields
           config={node.config as HttpRequestNodeConfig}
+          workspaceId={workspaceId}
           onChange={onChange}
         />
       ) : null}
@@ -141,11 +146,31 @@ function ConditionFields({
 
 function HttpRequestFields({
   config,
+  workspaceId,
   onChange,
 }: {
   config: HttpRequestNodeConfig;
+  workspaceId?: string;
   onChange(config: HttpRequestNodeConfig): void;
 }) {
+  const headerEntries = Object.entries(config.headers ?? {});
+
+  function setHeader(name: string, ref: SecretReference) {
+    onChange({ ...config, headers: { ...config.headers, [name]: ref } });
+  }
+
+  function removeHeader(name: string) {
+    const rest = Object.fromEntries(
+      Object.entries(config.headers ?? {}).filter(([k]) => k !== name),
+    );
+    onChange({ ...config, headers: rest });
+  }
+
+  function addHeader() {
+    const name = `Header-${headerEntries.length + 1}`;
+    setHeader(name, { secretId: "", injectAs: "raw" });
+  }
+
   return (
     <>
       <label htmlFor="http-method">HTTP method</label>
@@ -186,6 +211,54 @@ function HttpRequestFields({
         <option value="current_payload">current payload</option>
         <option value="empty">empty</option>
       </select>
+      <fieldset>
+        <legend>Headers</legend>
+        {headerEntries.map(([name, ref]) => (
+          <div key={name}>
+            <input
+              aria-label="Header name"
+              onChange={(e) => {
+                removeHeader(name);
+                setHeader(e.target.value, ref);
+              }}
+              type="text"
+              value={name}
+            />
+            {workspaceId ? (
+              <SecretPicker
+                workspaceId={workspaceId}
+                value={ref.secretId}
+                onChange={(secretId) => setHeader(name, { ...ref, secretId })}
+              />
+            ) : (
+              <input
+                aria-label="Secret ID"
+                onChange={(e) => setHeader(name, { ...ref, secretId: e.target.value })}
+                placeholder="secret ID"
+                type="text"
+                value={ref.secretId}
+              />
+            )}
+            <select
+              aria-label="Inject as"
+              onChange={(e) =>
+                setHeader(name, { ...ref, injectAs: e.target.value as SecretReference["injectAs"] })
+              }
+              value={ref.injectAs}
+            >
+              <option value="raw">raw</option>
+              <option value="Bearer">Bearer</option>
+              <option value="Basic">Basic</option>
+            </select>
+            <button onClick={() => removeHeader(name)} type="button">
+              Remove
+            </button>
+          </div>
+        ))}
+        <button onClick={addHeader} type="button">
+          Add header
+        </button>
+      </fieldset>
     </>
   );
 }

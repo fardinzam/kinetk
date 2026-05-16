@@ -42,6 +42,7 @@ export default async function WorkflowDetailPage({
       <WorkflowEditorWithPersistence
         workflowId={workflowId}
         workflowName={workflow.name}
+        workspaceId={workflow.workspaceId}
         serverGraph={workflow.graph}
       />
     </section>
