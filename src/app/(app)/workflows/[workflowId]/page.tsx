@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { WorkflowHeader } from "@/components/workflows/workflow-header";
 import { WorkflowEditorWithPersistence } from "@/components/workflows/workflow-editor-with-persistence";
+import { TriggerUrlPanel } from "@/components/workflows/trigger-url-panel";
 import { requireUser } from "@/server/auth/session";
 import {
   getWorkflowForUser,
@@ -39,6 +40,7 @@ export default async function WorkflowDetailPage({
   return (
     <section>
       <WorkflowHeader workflow={workflow} />
+      <TriggerUrlPanel workflowId={workflowId} />
       <WorkflowEditorWithPersistence
         workflowId={workflowId}
         workflowName={workflow.name}
