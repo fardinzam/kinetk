@@ -13,8 +13,7 @@ export function StepTimeline({ steps }: StepTimelineProps) {
     <ol aria-label="Step timeline">
       {steps.map((step) => (
         <li key={step.id} style={{ marginBottom: 16 }}>
-          <strong>{step.nodeType.replaceAll("_", " ")}</strong>
-          {" "}
+          <strong>{step.nodeType.replaceAll("_", " ")}</strong>{" "}
           <code>{step.nodeId}</code>
           {" · "}
           <span>{step.status}</span>

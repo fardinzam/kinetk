@@ -7,12 +7,16 @@ export type { SecretMetadata };
 
 export class SecretAccessError extends Error {
   readonly code = "secret_access_denied";
-  constructor() { super("Access denied"); }
+  constructor() {
+    super("Access denied");
+  }
 }
 
 export class SecretNotFoundError extends Error {
   readonly code = "secret_not_found";
-  constructor() { super("Secret not found"); }
+  constructor() {
+    super("Secret not found");
+  }
 }
 
 async function getQueries(queries?: SecretQueries): Promise<SecretQueries> {
@@ -43,7 +47,13 @@ async function findSecretWithAccess(
 }
 
 export async function createSecretForWorkspace(
-  input: { userId: string; workspaceId: string; name: string; description?: string; plaintext: string },
+  input: {
+    userId: string;
+    workspaceId: string;
+    name: string;
+    description?: string;
+    plaintext: string;
+  },
   queries?: SecretQueries,
 ): Promise<SecretMetadata> {
   const q = await getQueries(queries);

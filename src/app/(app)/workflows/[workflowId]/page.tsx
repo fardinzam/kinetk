@@ -35,14 +35,22 @@ export default async function WorkflowDetailPage({
   const workflow = await getWorkflowOrNotFound(user.id, workflowId);
 
   // Build nodeStatusMap when viewing a specific run overlay
-  let nodeStatusMap: ReadonlyMap<string, { status: string; errorJson?: unknown }> | undefined;
+  let nodeStatusMap:
+    | ReadonlyMap<string, { status: string; errorJson?: unknown }>
+    | undefined;
   if (runId) {
     const q = createRunQueries();
-    const canAccess = await q.userCanAccessWorkspace(user.id, workflow.workspaceId);
+    const canAccess = await q.userCanAccessWorkspace(
+      user.id,
+      workflow.workspaceId,
+    );
     if (canAccess) {
       const steps = await q.findStepsByRunId(runId, workflow.workspaceId);
       nodeStatusMap = new Map(
-        steps.map((s) => [s.nodeId, { status: s.status, errorJson: s.errorJson }]),
+        steps.map((s) => [
+          s.nodeId,
+          { status: s.status, errorJson: s.errorJson },
+        ]),
       );
     }
   }

@@ -35,7 +35,10 @@ export type WorkflowGraph = {
   viewport: WorkflowViewport;
 };
 
-export type WorkflowEventBase<TType extends string, TPayload extends JsonValue> = {
+export type WorkflowEventBase<
+  TType extends string,
+  TPayload extends JsonValue,
+> = {
   clientEventId: string;
   type: TType;
   eventSchemaVersion: EventSchemaVersion;

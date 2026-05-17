@@ -9,9 +9,7 @@ describe("AuthForm", () => {
 
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Sign in" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 
   it("renders sign-up action", () => {

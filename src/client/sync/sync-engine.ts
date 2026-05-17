@@ -1,4 +1,7 @@
-import { getSyncMetadata, setSyncMetadata } from "@/client/db/sync-metadata-store";
+import {
+  getSyncMetadata,
+  setSyncMetadata,
+} from "@/client/db/sync-metadata-store";
 import type { FlowForgeDatabase } from "@/client/db/indexed-db";
 import type { LocalEventQueue } from "./local-event-queue";
 import type { SyncStatus } from "./sync-status";
@@ -10,7 +13,9 @@ export type SyncEngineOptions = {
   onStatusChange(status: SyncStatus): void;
 };
 
-export async function syncPendingEvents(options: SyncEngineOptions): Promise<void> {
+export async function syncPendingEvents(
+  options: SyncEngineOptions,
+): Promise<void> {
   const { workflowId, db, queue, onStatusChange } = options;
 
   const events = await queue.getPendingEvents();

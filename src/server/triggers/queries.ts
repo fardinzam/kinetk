@@ -23,8 +23,14 @@ export type TriggerQueries = {
   findTriggerByWorkflow(workflowId: string): Promise<TriggerRecord | null>;
   findTriggerById(triggerId: string): Promise<TriggerRecord | null>;
   findActiveByTokenHash(tokenHash: string): Promise<TriggerRecord | null>;
-  updateTriggerHash(triggerId: string, tokenHash: string): Promise<TriggerRecord>;
-  updateTriggerStatus(triggerId: string, status: "active" | "disabled"): Promise<TriggerRecord>;
+  updateTriggerHash(
+    triggerId: string,
+    tokenHash: string,
+  ): Promise<TriggerRecord>;
+  updateTriggerStatus(
+    triggerId: string,
+    status: "active" | "disabled",
+  ): Promise<TriggerRecord>;
   updateLastUsed(triggerId: string): Promise<void>;
 };
 
@@ -50,7 +56,9 @@ function mapRow(row: {
 
 const RETURNING = `returning id, workflow_id, workspace_id, status, created_at, rotated_at, last_used_at`;
 
-export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries {
+export function createTriggerQueries(
+  db: Queryable = getPool(),
+): TriggerQueries {
   return {
     async userCanAccessWorkspace(userId, workspaceId) {
       const result = await db.query<{ exists: boolean }>(
@@ -62,8 +70,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async createTrigger({ workflowId, workspaceId, tokenHash }) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `insert into public.webhook_triggers (workflow_id, workspace_id, token_hash, status)
          values ($1, $2, $3, 'active') ${RETURNING}`,
@@ -74,8 +87,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async findTriggerByWorkflow(workflowId) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `select id, workflow_id, workspace_id, status, created_at, rotated_at, last_used_at
          from public.webhook_triggers where workflow_id = $1 limit 1`,
@@ -86,8 +104,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async findTriggerById(triggerId) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `select id, workflow_id, workspace_id, status, created_at, rotated_at, last_used_at
          from public.webhook_triggers where id = $1 limit 1`,
@@ -98,8 +121,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async findActiveByTokenHash(tokenHash) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `select id, workflow_id, workspace_id, status, created_at, rotated_at, last_used_at
          from public.webhook_triggers where token_hash = $1 and status = 'active' limit 1`,
@@ -110,8 +138,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async updateTriggerHash(triggerId, tokenHash) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `update public.webhook_triggers
          set token_hash = $2, rotated_at = now()
@@ -123,8 +156,13 @@ export function createTriggerQueries(db: Queryable = getPool()): TriggerQueries 
 
     async updateTriggerStatus(triggerId, status) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        created_at: Date; rotated_at: Date | null; last_used_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        created_at: Date;
+        rotated_at: Date | null;
+        last_used_at: Date | null;
       }>(
         `update public.webhook_triggers set status = $2 where id = $1 ${RETURNING}`,
         [triggerId, status],

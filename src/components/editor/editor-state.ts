@@ -123,8 +123,7 @@ export function deleteSelectedNode(state: EditorState): EditorState {
       ...state.graph,
       nodes: state.graph.nodes.filter((node) => node.id !== nodeId),
       edges: state.graph.edges.filter(
-        (edge) =>
-          edge.sourceNodeId !== nodeId && edge.targetNodeId !== nodeId,
+        (edge) => edge.sourceNodeId !== nodeId && edge.targetNodeId !== nodeId,
       ),
     },
   };
@@ -163,7 +162,8 @@ export function connectNodes(
   if (
     state.graph.edges.some(
       (edge) =>
-        edge.sourceNodeId === sourceNodeId && edge.targetNodeId === targetNodeId,
+        edge.sourceNodeId === sourceNodeId &&
+        edge.targetNodeId === targetNodeId,
     )
   ) {
     return state;

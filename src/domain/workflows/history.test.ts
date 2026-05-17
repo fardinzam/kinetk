@@ -12,7 +12,9 @@ import type { WorkflowGraph } from "./types";
 
 function makeGraph(id: string): WorkflowGraph {
   return {
-    nodes: [{ id, type: "log", position: { x: 0, y: 0 }, config: { label: id } }],
+    nodes: [
+      { id, type: "log", position: { x: 0, y: 0 }, config: { label: id } },
+    ],
     edges: [],
     viewport: { x: 0, y: 0, zoom: 1 },
   };

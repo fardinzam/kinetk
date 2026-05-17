@@ -49,7 +49,9 @@ function mapWorkflowRow(row: {
   };
 }
 
-export function createWorkflowQueries(db: Queryable = getPool()): WorkflowQueries {
+export function createWorkflowQueries(
+  db: Queryable = getPool(),
+): WorkflowQueries {
   return {
     async userCanAccessWorkspace(userId, workspaceId) {
       const result = await db.query<{ exists: boolean }>(

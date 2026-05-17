@@ -21,11 +21,17 @@ export async function GET(request: Request) {
   const workspaceId = url.searchParams.get("workspaceId");
 
   if (!workspaceId) {
-    return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "workspaceId is required" },
+      { status: 400 },
+    );
   }
 
   try {
-    const secrets = await listSecretsForWorkspace({ userId: user.id, workspaceId });
+    const secrets = await listSecretsForWorkspace({
+      userId: user.id,
+      workspaceId,
+    });
     return NextResponse.json({ secrets });
   } catch (error) {
     if (error instanceof SecretAccessError) {

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { requireUser } from "@/server/auth/session";
-import { getWorkflowForUser, WorkflowNotFoundError, WorkflowAccessError } from "@/server/workflows/service";
+import {
+  getWorkflowForUser,
+  WorkflowNotFoundError,
+  WorkflowAccessError,
+} from "@/server/workflows/service";
 import { getEventsAfterRevision } from "@/server/sync/replay";
 
 type EventsRouteContext = {
@@ -31,8 +35,14 @@ export async function GET(request: Request, context: EventsRouteContext) {
 
     return NextResponse.json(result);
   } catch (error) {
-    if (error instanceof WorkflowAccessError || error instanceof WorkflowNotFoundError) {
-      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    if (
+      error instanceof WorkflowAccessError ||
+      error instanceof WorkflowNotFoundError
+    ) {
+      return NextResponse.json(
+        { error: "Workflow not found" },
+        { status: 404 },
+      );
     }
 
     throw error;

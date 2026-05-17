@@ -17,7 +17,11 @@ type NodeConfigPanelProps = {
   onChange(config: unknown): void;
 };
 
-export function NodeConfigPanel({ node, workspaceId, onChange }: NodeConfigPanelProps) {
+export function NodeConfigPanel({
+  node,
+  workspaceId,
+  onChange,
+}: NodeConfigPanelProps) {
   if (!node) {
     return (
       <aside aria-label="Node config">
@@ -89,14 +93,20 @@ function TransformJsonFields({
       <label htmlFor="mapping-target">Mapping target</label>
       <input
         id="mapping-target"
-        onChange={(e) => { setTarget(e.target.value); persist(e.target.value, source); }}
+        onChange={(e) => {
+          setTarget(e.target.value);
+          persist(e.target.value, source);
+        }}
         type="text"
         value={target}
       />
       <label htmlFor="mapping-source">Mapping source</label>
       <input
         id="mapping-source"
-        onChange={(e) => { setSource(e.target.value); persist(target, e.target.value); }}
+        onChange={(e) => {
+          setSource(e.target.value);
+          persist(target, e.target.value);
+        }}
         type="text"
         value={source}
       />
@@ -120,7 +130,8 @@ function ConditionFields({
         id="condition-left-path"
         onChange={(e) => {
           setLeftPath(e.target.value);
-          if (e.target.value.trim()) onChange({ ...config, leftPath: e.target.value });
+          if (e.target.value.trim())
+            onChange({ ...config, leftPath: e.target.value });
         }}
         type="text"
         value={leftPath}
@@ -170,15 +181,17 @@ function HttpRequestFields({
   // Local draft state allows rows with an empty secretId (not yet selected).
   // Only headers with both a non-empty name and secretId are passed to onChange
   // so Zod validation in updateSelectedNodeConfig never sees incomplete rows.
-  const [draftHeaders, setDraftHeaders] = useState<Record<string, SecretReference>>(
-    () => config.headers ?? {},
-  );
+  const [draftHeaders, setDraftHeaders] = useState<
+    Record<string, SecretReference>
+  >(() => config.headers ?? {});
 
   const headerEntries = Object.entries(draftHeaders);
 
   function validHeaders(headers: Record<string, SecretReference>) {
     return Object.fromEntries(
-      Object.entries(headers).filter(([name, ref]) => name.trim() !== "" && ref.secretId !== ""),
+      Object.entries(headers).filter(
+        ([name, ref]) => name.trim() !== "" && ref.secretId !== "",
+      ),
     );
   }
 
@@ -199,7 +212,10 @@ function HttpRequestFields({
   function addHeader() {
     // Only update local draft — don't call onChange since secretId is empty
     const name = `Header-${headerEntries.length + 1}`;
-    setDraftHeaders((prev) => ({ ...prev, [name]: { secretId: "", injectAs: "raw" } }));
+    setDraftHeaders((prev) => ({
+      ...prev,
+      [name]: { secretId: "", injectAs: "raw" },
+    }));
   }
 
   return (
@@ -228,7 +244,11 @@ function HttpRequestFields({
           setDraftUrl(e.target.value);
           try {
             new URL(e.target.value);
-            onChange({ ...config, headers: validHeaders(draftHeaders), url: e.target.value });
+            onChange({
+              ...config,
+              headers: validHeaders(draftHeaders),
+              url: e.target.value,
+            });
           } catch {
             // invalid URL — keep last valid config, show draft in input
           }
@@ -259,10 +279,17 @@ function HttpRequestFields({
               onChange={(e) => {
                 const newName = e.target.value;
                 const updated = Object.fromEntries(
-                  Object.entries(draftHeaders).map(([k, v]) => [k === name ? newName : k, v]),
+                  Object.entries(draftHeaders).map(([k, v]) => [
+                    k === name ? newName : k,
+                    v,
+                  ]),
                 );
                 setDraftHeaders(updated);
-                onChange({ ...config, url: draftUrl, headers: validHeaders(updated) });
+                onChange({
+                  ...config,
+                  url: draftUrl,
+                  headers: validHeaders(updated),
+                });
               }}
               type="text"
               value={name}
@@ -276,7 +303,9 @@ function HttpRequestFields({
             ) : (
               <input
                 aria-label="Secret ID"
-                onChange={(e) => setHeader(name, { ...ref, secretId: e.target.value })}
+                onChange={(e) =>
+                  setHeader(name, { ...ref, secretId: e.target.value })
+                }
                 placeholder="secret ID"
                 type="text"
                 value={ref.secretId}
@@ -285,7 +314,10 @@ function HttpRequestFields({
             <select
               aria-label="Inject as"
               onChange={(e) =>
-                setHeader(name, { ...ref, injectAs: e.target.value as SecretReference["injectAs"] })
+                setHeader(name, {
+                  ...ref,
+                  injectAs: e.target.value as SecretReference["injectAs"],
+                })
               }
               value={ref.injectAs}
             >

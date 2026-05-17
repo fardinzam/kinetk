@@ -41,7 +41,10 @@ const graph: WorkflowGraph = {
 describe("editor state", () => {
   it("adds MVP node types with default config", () => {
     const state = addNode(
-      { graph: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }, selectedNodeId: null },
+      {
+        graph: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
+        selectedNodeId: null,
+      },
       "transform_json",
     );
 
@@ -58,8 +61,9 @@ describe("editor state", () => {
   it("does not add a second webhook trigger", () => {
     const state = addNode({ graph, selectedNodeId: null }, "webhook_trigger");
 
-    expect(state.graph.nodes.filter((node) => node.type === "webhook_trigger"))
-      .toHaveLength(1);
+    expect(
+      state.graph.nodes.filter((node) => node.type === "webhook_trigger"),
+    ).toHaveLength(1);
     expect(state.selectedNodeId).toBeNull();
   });
 
@@ -71,11 +75,10 @@ describe("editor state", () => {
   });
 
   it("moves one node in memory", () => {
-    const state = moveNode(
-      { graph, selectedNodeId: "trigger" },
-      "log",
-      { x: 420, y: 140 },
-    );
+    const state = moveNode({ graph, selectedNodeId: "trigger" }, "log", {
+      x: 420,
+      y: 140,
+    });
 
     expect(state.graph.nodes).toEqual([
       expect.objectContaining({ id: "trigger", position: { x: 40, y: 80 } }),
@@ -88,9 +91,7 @@ describe("editor state", () => {
     const state = deleteSelectedNode({ graph, selectedNodeId: "trigger" });
 
     expect(state.selectedNodeId).toBeNull();
-    expect(state.graph.nodes).toEqual([
-      expect.objectContaining({ id: "log" }),
-    ]);
+    expect(state.graph.nodes).toEqual([expect.objectContaining({ id: "log" })]);
     expect(state.graph.edges).toEqual([]);
   });
 
@@ -129,7 +130,10 @@ describe("editor state", () => {
   });
 
   it("pans and zooms the viewport", () => {
-    const panned = panViewport({ graph, selectedNodeId: null }, { x: 20, y: -10 });
+    const panned = panViewport(
+      { graph, selectedNodeId: null },
+      { x: 20, y: -10 },
+    );
     const zoomed = zoomViewport(panned, 1.5);
 
     expect(zoomed.graph.viewport).toEqual({ x: 20, y: -10, zoom: 1.5 });

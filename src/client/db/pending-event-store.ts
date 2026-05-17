@@ -28,9 +28,7 @@ export async function removePendingEvent(
   clientEventId: string,
 ): Promise<void> {
   const tx = db.transaction("pending_events", "readwrite");
-  let cursor = await tx
-    .store.index("by_workflow")
-    .openCursor(workflowId);
+  let cursor = await tx.store.index("by_workflow").openCursor(workflowId);
 
   while (cursor) {
     if (cursor.value.event.clientEventId === clientEventId) {

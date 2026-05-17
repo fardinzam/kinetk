@@ -51,7 +51,10 @@ async function writeStepRun(
   );
 }
 
-export async function executeRun(run: ClaimedRun, db: Queryable): Promise<void> {
+export async function executeRun(
+  run: ClaimedRun,
+  db: Queryable,
+): Promise<void> {
   const startTime = Date.now();
 
   // Load workflow graph

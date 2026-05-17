@@ -30,7 +30,11 @@ export async function PATCH(request: Request, context: SecretRouteContext) {
   try {
     const secret =
       parsed.data.action === "rotate"
-        ? await rotateSecretValue({ userId: user.id, secretId, newPlaintext: parsed.data.plaintext })
+        ? await rotateSecretValue({
+            userId: user.id,
+            secretId,
+            newPlaintext: parsed.data.plaintext,
+          })
         : await disableSecret({ userId: user.id, secretId });
 
     return NextResponse.json({ secret });

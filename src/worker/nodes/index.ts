@@ -13,7 +13,9 @@ export type NodeExecutorResult =
   | { ok: true; output: unknown; branch?: string }
   | { ok: false; error: string; retryable: boolean };
 
-export type NodeExecutor = (input: NodeExecutorInput) => Promise<NodeExecutorResult>;
+export type NodeExecutor = (
+  input: NodeExecutorInput,
+) => Promise<NodeExecutorResult>;
 
 import { webhookTriggerExecutor } from "./webhook-trigger";
 import { transformJsonExecutor } from "./transform-json";

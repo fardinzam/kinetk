@@ -29,9 +29,14 @@ async function buildHeaders(
 
     let value: string;
     switch (ref.injectAs) {
-      case "Bearer": value = `Bearer ${plaintext}`; break;
-      case "Basic": value = `Basic ${Buffer.from(plaintext).toString("base64")}`; break;
-      default: value = plaintext;
+      case "Bearer":
+        value = `Bearer ${plaintext}`;
+        break;
+      case "Basic":
+        value = `Basic ${Buffer.from(plaintext).toString("base64")}`;
+        break;
+      default:
+        value = plaintext;
     }
 
     headers[headerName] = value;
@@ -40,9 +45,17 @@ async function buildHeaders(
   return headers;
 }
 
-export const httpRequestExecutor: NodeExecutor = async ({ config, context, db }) => {
-  const { method, url, headers: headerConfig, bodyMode } =
-    config as HttpRequestNodeConfig;
+export const httpRequestExecutor: NodeExecutor = async ({
+  config,
+  context,
+  db,
+}) => {
+  const {
+    method,
+    url,
+    headers: headerConfig,
+    bodyMode,
+  } = config as HttpRequestNodeConfig;
 
   let headers: Record<string, string>;
   try {
@@ -74,7 +87,11 @@ export const httpRequestExecutor: NodeExecutor = async ({ config, context, db })
       if (response.ok) {
         const text = await readLimited(response, MAX_RESPONSE_BYTES);
         let output: unknown = text;
-        try { output = JSON.parse(text); } catch { /* keep as string */ }
+        try {
+          output = JSON.parse(text);
+        } catch {
+          /* keep as string */
+        }
         return { ok: true, output };
       }
 
@@ -99,7 +116,10 @@ export const httpRequestExecutor: NodeExecutor = async ({ config, context, db })
   return { ok: false, error: lastError, retryable: false };
 };
 
-async function readLimited(response: Response, maxBytes: number): Promise<string> {
+async function readLimited(
+  response: Response,
+  maxBytes: number,
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) return "";
 

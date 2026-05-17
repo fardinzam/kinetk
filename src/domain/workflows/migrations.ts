@@ -6,7 +6,10 @@ import type { WorkflowGraph } from "./types";
 export class UnsupportedWorkflowSchemaVersionError extends Error {
   readonly code = "snapshot_required";
 
-  constructor(readonly version: number, readonly subject: "event" | "snapshot") {
+  constructor(
+    readonly version: number,
+    readonly subject: "event" | "snapshot",
+  ) {
     super(`Unsupported workflow ${subject} schema version: ${version}`);
     this.name = "UnsupportedWorkflowSchemaVersionError";
   }

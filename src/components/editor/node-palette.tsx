@@ -21,7 +21,9 @@ export function NodePalette({
     <aside aria-label="Node palette">
       {nodeTypes.map((nodeType) => (
         <button
-          disabled={nodeType.type === "webhook_trigger" && !canAddWebhookTrigger}
+          disabled={
+            nodeType.type === "webhook_trigger" && !canAddWebhookTrigger
+          }
           key={nodeType.type}
           onClick={() => onAddNode(nodeType.type)}
           type="button"

@@ -35,7 +35,9 @@ export type WorkspaceQueries = {
   userCanAccessWorkspace(userId: string, workspaceId: string): Promise<boolean>;
 };
 
-export function createWorkspaceQueries(db: Queryable = getPool()): WorkspaceQueries {
+export function createWorkspaceQueries(
+  db: Queryable = getPool(),
+): WorkspaceQueries {
   return {
     async upsertUserProfile(user) {
       await db.query(
@@ -66,9 +68,7 @@ export function createWorkspaceQueries(db: Queryable = getPool()): WorkspaceQuer
       );
       const row = result.rows[0];
 
-      return row
-        ? { id: row.id, ownerId: row.owner_id, name: row.name }
-        : null;
+      return row ? { id: row.id, ownerId: row.owner_id, name: row.name } : null;
     },
     async createWorkspace(input) {
       const result = await db.query<{

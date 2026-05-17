@@ -7,7 +7,9 @@ type CreateWorkflowDialogProps = {
   workspaceId: string;
 };
 
-export function CreateWorkflowDialog({ workspaceId }: CreateWorkflowDialogProps) {
+export function CreateWorkflowDialog({
+  workspaceId,
+}: CreateWorkflowDialogProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");

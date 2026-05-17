@@ -77,6 +77,7 @@ export type WorkflowEvent = z.infer<typeof workflowEventSchema>;
 
 export const CURRENT_EVENT_SCHEMA_VERSION: EventSchemaVersion = 1;
 
-export type WorkflowEventFor<
-  TType extends WorkflowEventType,
-> = Extract<WorkflowEvent, WorkflowEventBase<TType, never>>;
+export type WorkflowEventFor<TType extends WorkflowEventType> = Extract<
+  WorkflowEvent,
+  WorkflowEventBase<TType, never>
+>;

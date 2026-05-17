@@ -86,7 +86,10 @@ function SecretRow({ secret }: { secret: SecretMetadata }) {
           </button>
           <button
             disabled={isSubmitting}
-            onClick={() => { setRotating(false); setNewPlaintext(""); }}
+            onClick={() => {
+              setRotating(false);
+              setNewPlaintext("");
+            }}
             type="button"
           >
             Cancel

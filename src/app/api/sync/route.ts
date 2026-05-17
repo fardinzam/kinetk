@@ -20,7 +20,10 @@ export async function POST(request: Request) {
   const parsed = syncRequestSchema.safeParse(await request.json());
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid sync request" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid sync request" },
+      { status: 400 },
+    );
   }
 
   try {
@@ -38,7 +41,10 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof WorkflowNotFoundForSyncError) {
-      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Workflow not found" },
+        { status: 404 },
+      );
     }
 
     throw error;

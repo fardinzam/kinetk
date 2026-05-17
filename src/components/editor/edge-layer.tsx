@@ -77,7 +77,9 @@ export function EdgeLayer({ edges, nodes, onDeleteEdge }: EdgeLayerProps) {
             }}
             type="button"
           >
-            <span aria-label={`edge ${edge.sourceNodeId} to ${edge.targetNodeId}`}>
+            <span
+              aria-label={`edge ${edge.sourceNodeId} to ${edge.targetNodeId}`}
+            >
               Edge
             </span>
           </button>

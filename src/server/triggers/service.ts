@@ -7,12 +7,16 @@ export type { TriggerRecord };
 
 export class TriggerAccessError extends Error {
   readonly code = "trigger_access_denied";
-  constructor() { super("Access denied"); }
+  constructor() {
+    super("Access denied");
+  }
 }
 
 export class TriggerNotFoundError extends Error {
   readonly code = "trigger_not_found";
-  constructor() { super("Trigger not found"); }
+  constructor() {
+    super("Trigger not found");
+  }
 }
 
 async function getQueries(queries?: TriggerQueries): Promise<TriggerQueries> {

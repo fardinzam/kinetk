@@ -45,7 +45,10 @@ export function decryptSecret(encrypted: EncryptedValue): string {
   );
   decipher.setAuthTag(Buffer.from(encrypted.authTag, "base64"));
   return (
-    decipher.update(Buffer.from(encrypted.ciphertext, "base64"), undefined, "utf8") +
-    decipher.final("utf8")
+    decipher.update(
+      Buffer.from(encrypted.ciphertext, "base64"),
+      undefined,
+      "utf8",
+    ) + decipher.final("utf8")
   );
 }

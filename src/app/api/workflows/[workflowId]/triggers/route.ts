@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireUser } from "@/server/auth/session";
-import { getWorkflowForUser, WorkflowNotFoundError, WorkflowAccessError } from "@/server/workflows/service";
+import {
+  getWorkflowForUser,
+  WorkflowNotFoundError,
+  WorkflowAccessError,
+} from "@/server/workflows/service";
 import {
   createTrigger,
   disableTrigger,
@@ -22,10 +26,16 @@ const patchSchema = z.discriminatedUnion("action", [
 ]);
 
 function handleTriggerError(error: unknown) {
-  if (error instanceof TriggerAccessError || error instanceof WorkflowAccessError) {
+  if (
+    error instanceof TriggerAccessError ||
+    error instanceof WorkflowAccessError
+  ) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
-  if (error instanceof TriggerNotFoundError || error instanceof WorkflowNotFoundError) {
+  if (
+    error instanceof TriggerNotFoundError ||
+    error instanceof WorkflowNotFoundError
+  ) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   throw error;
@@ -86,11 +96,17 @@ export async function PATCH(request: Request, context: TriggerRouteContext) {
     }
 
     if (parsed.data.action === "rotate") {
-      const result = await rotateTrigger({ userId: user.id, triggerId: trigger.id });
+      const result = await rotateTrigger({
+        userId: user.id,
+        triggerId: trigger.id,
+      });
       return NextResponse.json(result);
     }
 
-    const updated = await disableTrigger({ userId: user.id, triggerId: trigger.id });
+    const updated = await disableTrigger({
+      userId: user.id,
+      triggerId: trigger.id,
+    });
     return NextResponse.json({ trigger: updated });
   } catch (error) {
     return handleTriggerError(error);

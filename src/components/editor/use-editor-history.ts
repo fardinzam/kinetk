@@ -27,7 +27,10 @@ export function useEditorHistory(initialGraph: WorkflowGraph) {
   }));
 
   function applyState(updater: (s: EditorState) => EditorState) {
-    setCombined((prev) => ({ ...prev, editorState: updater(prev.editorState) }));
+    setCombined((prev) => ({
+      ...prev,
+      editorState: updater(prev.editorState),
+    }));
   }
 
   function applyGraphChange(updater: (s: EditorState) => EditorState) {

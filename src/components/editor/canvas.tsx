@@ -57,7 +57,11 @@ export function Canvas({
             isSelected={node.id === selectedNodeId}
             key={node.id}
             node={node}
-            stepStatus={nodeStatusMap?.get(node.id)?.status as Parameters<typeof NodeCard>[0]["stepStatus"]}
+            stepStatus={
+              nodeStatusMap?.get(node.id)?.status as Parameters<
+                typeof NodeCard
+              >[0]["stepStatus"]
+            }
             onConnectFrom={onConnectFrom}
             onConnectTo={onConnectTo}
             onPointerDown={onNodePointerDown}

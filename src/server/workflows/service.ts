@@ -1,6 +1,10 @@
 import type { WorkflowGraph } from "@/domain/workflows/types";
 
-import type { WorkflowQueries, WorkflowRecord, WorkflowSummary } from "./queries";
+import type {
+  WorkflowQueries,
+  WorkflowRecord,
+  WorkflowSummary,
+} from "./queries";
 
 export class WorkflowAccessError extends Error {
   readonly code = "workspace_access_denied";
@@ -95,7 +99,9 @@ export async function getWorkflowForUser(
   queries?: WorkflowQueries,
 ): Promise<WorkflowRecord> {
   const workflowQueries = await getWorkflowQueries(queries);
-  const workflow = await workflowQueries.findWorkflowWithGraphById(input.workflowId);
+  const workflow = await workflowQueries.findWorkflowWithGraphById(
+    input.workflowId,
+  );
 
   if (!workflow) {
     throw new WorkflowNotFoundError();

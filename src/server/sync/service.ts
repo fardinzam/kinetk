@@ -72,7 +72,11 @@ export async function syncWorkflowEvents(
     let baseRevision = syncState.currentVersion;
 
     if (newEvents.length > 0) {
-      baseRevision = await claimRevisions(txDb, input.workflowId, newEvents.length);
+      baseRevision = await claimRevisions(
+        txDb,
+        input.workflowId,
+        newEvents.length,
+      );
 
       await insertWorkflowEvents(txDb, {
         workflowId: input.workflowId,

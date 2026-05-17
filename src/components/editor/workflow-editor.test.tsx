@@ -34,7 +34,11 @@ describe("WorkflowEditor", () => {
   it("shows validation errors without blocking edits", () => {
     render(
       <WorkflowEditor
-        initialGraph={{ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }}
+        initialGraph={{
+          nodes: [],
+          edges: [],
+          viewport: { x: 0, y: 0, zoom: 1 },
+        }}
       />,
     );
 
@@ -42,18 +46,26 @@ describe("WorkflowEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Add log" }));
 
-    expect(screen.getByRole("button", { name: "log log_1" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "log log_1" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("invalid_trigger_count")).toBeInTheDocument();
   });
 
   it("builds a valid trigger to transform to log workflow", () => {
     render(
       <WorkflowEditor
-        initialGraph={{ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }}
+        initialGraph={{
+          nodes: [],
+          edges: [],
+          viewport: { x: 0, y: 0, zoom: 1 },
+        }}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Add webhook trigger" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add webhook trigger" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Add transform json" }));
     fireEvent.click(screen.getByRole("button", { name: "Add log" }));
     fireEvent.click(
@@ -67,10 +79,12 @@ describe("WorkflowEditor", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Connect to log_1" }));
 
-    expect(screen.getByLabelText("edge webhook_trigger_1 to transform_json_1"))
-      .toBeInTheDocument();
-    expect(screen.getByLabelText("edge transform_json_1 to log_1"))
-      .toBeInTheDocument();
+    expect(
+      screen.getByLabelText("edge webhook_trigger_1 to transform_json_1"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("edge transform_json_1 to log_1"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Graph is executable.")).toBeInTheDocument();
   });
 
@@ -109,26 +123,36 @@ describe("WorkflowEditor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
     fireEvent.click(screen.getByRole("button", { name: "Add http request" }));
     fireEvent.click(screen.getByRole("button", { name: "Add log" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add webhook trigger" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add webhook trigger" }),
+    );
 
-    expect(screen.getByRole("button", { name: "transform json transform_json_1" }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "condition condition_1" }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "http request http_request_1" }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "log log_1" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add webhook trigger" }))
-      .toBeDisabled();
-    expect(screen.getByRole("button", { name: "webhook trigger trigger" }))
-      .toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "transform json transform_json_1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "condition condition_1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "http request http_request_1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "log log_1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add webhook trigger" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "webhook trigger trigger" }),
+    ).toBeInTheDocument();
   });
 
   it("renders a seeded graph with nodes and edges", () => {
     render(<WorkflowEditor initialGraph={seededGraph} />);
 
-    expect(screen.getByRole("button", { name: "webhook trigger trigger" }))
-      .toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "webhook trigger trigger" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "log log" })).toBeInTheDocument();
     expect(screen.getByLabelText("Workflow edges")).toBeInTheDocument();
   });
@@ -156,20 +180,30 @@ describe("WorkflowEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Delete selected" }));
 
-    expect(screen.queryByRole("button", { name: "log log" })).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("edge trigger to log")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "log log" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("edge trigger to log"),
+    ).not.toBeInTheDocument();
   });
 
   it("connects nodes with handles and deletes edges", () => {
     render(<WorkflowEditor initialGraph={{ ...seededGraph, edges: [] }} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Connect from trigger" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Connect from trigger" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Connect to log" }));
 
     expect(screen.getByLabelText("edge trigger to log")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete edge trigger to log" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Delete edge trigger to log" }),
+    );
 
-    expect(screen.queryByLabelText("edge trigger to log")).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("edge trigger to log"),
+    ).not.toBeInTheDocument();
   });
 });

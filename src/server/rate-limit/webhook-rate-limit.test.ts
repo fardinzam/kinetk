@@ -25,7 +25,7 @@ function makeDb(counters: Map<string, Counter> = new Map()): Queryable {
         command: "INSERT",
         oid: 0,
         fields: [],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
     },
   };

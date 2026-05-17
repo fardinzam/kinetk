@@ -41,13 +41,22 @@ export type RunQueries = {
     before?: Date,
   ): Promise<RunSummary[]>;
   findRunById(runId: string, workspaceId: string): Promise<RunSummary | null>;
-  findStepsByRunId(runId: string, workspaceId: string): Promise<StepRunRecord[]>;
+  findStepsByRunId(
+    runId: string,
+    workspaceId: string,
+  ): Promise<StepRunRecord[]>;
 };
 
 function mapRun(row: {
-  id: string; workflow_id: string; workspace_id: string; status: string;
-  step_count: number; error_summary: string | null;
-  queued_at: Date; started_at: Date | null; finished_at: Date | null;
+  id: string;
+  workflow_id: string;
+  workspace_id: string;
+  status: string;
+  step_count: number;
+  error_summary: string | null;
+  queued_at: Date;
+  started_at: Date | null;
+  finished_at: Date | null;
 }): RunSummary {
   return {
     id: row.id,
@@ -63,10 +72,18 @@ function mapRun(row: {
 }
 
 function mapStep(row: {
-  id: string; run_id: string; node_id: string; node_type: string; status: string;
-  input_json: unknown; output_json: unknown; error_json: unknown;
-  attempt: number; duration_ms: number | null;
-  started_at: Date | null; finished_at: Date | null;
+  id: string;
+  run_id: string;
+  node_id: string;
+  node_type: string;
+  status: string;
+  input_json: unknown;
+  output_json: unknown;
+  error_json: unknown;
+  attempt: number;
+  duration_ms: number | null;
+  started_at: Date | null;
+  finished_at: Date | null;
 }): StepRunRecord {
   return {
     id: row.id,
@@ -112,9 +129,15 @@ export function createRunQueries(db: Queryable = getPool()): RunQueries {
 
     async listRunsForWorkflow(workflowId, workspaceId, limit, before) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        step_count: number; error_summary: string | null;
-        queued_at: Date; started_at: Date | null; finished_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        step_count: number;
+        error_summary: string | null;
+        queued_at: Date;
+        started_at: Date | null;
+        finished_at: Date | null;
       }>(
         before
           ? `select id, workflow_id, workspace_id, status, step_count, error_summary,
@@ -127,16 +150,24 @@ export function createRunQueries(db: Queryable = getPool()): RunQueries {
              from public.workflow_runs
              where workspace_id = $1 and workflow_id = $2
              order by queued_at desc limit $3`,
-        before ? [workspaceId, workflowId, before, limit] : [workspaceId, workflowId, limit],
+        before
+          ? [workspaceId, workflowId, before, limit]
+          : [workspaceId, workflowId, limit],
       );
       return result.rows.map(mapRun);
     },
 
     async findRunById(runId, workspaceId) {
       const result = await db.query<{
-        id: string; workflow_id: string; workspace_id: string; status: string;
-        step_count: number; error_summary: string | null;
-        queued_at: Date; started_at: Date | null; finished_at: Date | null;
+        id: string;
+        workflow_id: string;
+        workspace_id: string;
+        status: string;
+        step_count: number;
+        error_summary: string | null;
+        queued_at: Date;
+        started_at: Date | null;
+        finished_at: Date | null;
       }>(
         `select id, workflow_id, workspace_id, status, step_count, error_summary,
                 queued_at, started_at, finished_at
@@ -148,10 +179,18 @@ export function createRunQueries(db: Queryable = getPool()): RunQueries {
 
     async findStepsByRunId(runId, workspaceId) {
       const result = await db.query<{
-        id: string; run_id: string; node_id: string; node_type: string; status: string;
-        input_json: unknown; output_json: unknown; error_json: unknown;
-        attempt: number; duration_ms: number | null;
-        started_at: Date | null; finished_at: Date | null;
+        id: string;
+        run_id: string;
+        node_id: string;
+        node_type: string;
+        status: string;
+        input_json: unknown;
+        output_json: unknown;
+        error_json: unknown;
+        attempt: number;
+        duration_ms: number | null;
+        started_at: Date | null;
+        finished_at: Date | null;
       }>(
         `select id, run_id, node_id, node_type, status,
                 input_json, output_json, error_json,

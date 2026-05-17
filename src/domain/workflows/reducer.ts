@@ -22,7 +22,10 @@ export function applyWorkflowEvent(
         ...state,
         graph: {
           ...state.graph,
-          nodes: [...state.graph.nodes, workflowNodeSchema.parse(event.payload.node)],
+          nodes: [
+            ...state.graph.nodes,
+            workflowNodeSchema.parse(event.payload.node),
+          ],
         },
       };
     case "node_updated":

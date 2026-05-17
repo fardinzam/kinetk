@@ -81,7 +81,10 @@ function hasCycle(nodeIds: string[], edges: WorkflowEdge[]): boolean {
   return nodeIds.some((nodeId) => visit(nodeId));
 }
 
-function reachableFrom(triggerNodeId: string, edges: WorkflowEdge[]): Set<string> {
+function reachableFrom(
+  triggerNodeId: string,
+  edges: WorkflowEdge[],
+): Set<string> {
   const adjacency = adjacencyFor(edges);
   const reachable = new Set<string>([triggerNodeId]);
   const queue = [triggerNodeId];
@@ -125,7 +128,10 @@ function unsupportedNodeErrors(input: unknown): WorkflowValidationError[] {
       "log",
     ]);
 
-    if (typeof candidate.type === "string" && !supportedTypes.has(candidate.type)) {
+    if (
+      typeof candidate.type === "string" &&
+      !supportedTypes.has(candidate.type)
+    ) {
       return [
         {
           code: "unsupported_node_type" as const,
@@ -139,7 +145,9 @@ function unsupportedNodeErrors(input: unknown): WorkflowValidationError[] {
   });
 }
 
-export function validateExecutableGraph(input: unknown): WorkflowValidationResult {
+export function validateExecutableGraph(
+  input: unknown,
+): WorkflowValidationResult {
   const errors: WorkflowValidationError[] = [...unsupportedNodeErrors(input)];
   const parsed = workflowGraphSchema.safeParse(input);
 

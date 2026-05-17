@@ -30,9 +30,17 @@ export type SecretQueries = {
   createSecret(input: CreateSecretRecord): Promise<SecretMetadata>;
   listSecretsForWorkspace(workspaceId: string): Promise<SecretMetadata[]>;
   findSecretById(secretId: string): Promise<SecretMetadata | null>;
-  findSecretByIdWithCiphertext(secretId: string): Promise<EncryptedSecretRecord | null>;
-  updateSecretValue(secretId: string, encrypted: EncryptedValue): Promise<SecretMetadata>;
-  updateSecretStatus(secretId: string, status: "active" | "disabled"): Promise<SecretMetadata>;
+  findSecretByIdWithCiphertext(
+    secretId: string,
+  ): Promise<EncryptedSecretRecord | null>;
+  updateSecretValue(
+    secretId: string,
+    encrypted: EncryptedValue,
+  ): Promise<SecretMetadata>;
+  updateSecretStatus(
+    secretId: string,
+    status: "active" | "disabled",
+  ): Promise<SecretMetadata>;
 };
 
 function mapRow(row: {
@@ -76,8 +84,15 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
 
     async createSecret(input) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
       }>(
         `
           insert into public.workflow_secrets
@@ -87,8 +102,13 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
                     created_at, updated_at, rotated_at
         `,
         [
-          input.workspaceId, input.name, input.description ?? null,
-          input.ciphertext, input.nonce, input.authTag, input.keyVersion,
+          input.workspaceId,
+          input.name,
+          input.description ?? null,
+          input.ciphertext,
+          input.nonce,
+          input.authTag,
+          input.keyVersion,
         ],
       );
       return mapRow(result.rows[0]!);
@@ -96,8 +116,15 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
 
     async listSecretsForWorkspace(workspaceId) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
       }>(
         `
           select id, workspace_id, name, description, status, key_version,
@@ -113,8 +140,15 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
 
     async findSecretById(secretId) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
       }>(
         `
           select id, workspace_id, name, description, status, key_version,
@@ -131,9 +165,18 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
 
     async findSecretByIdWithCiphertext(secretId) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
-        ciphertext: string; nonce: string; auth_tag: string;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
+        ciphertext: string;
+        nonce: string;
+        auth_tag: string;
       }>(
         `
           select id, workspace_id, name, description, status, key_version,
@@ -158,8 +201,15 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
 
     async updateSecretValue(secretId, encrypted) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
       }>(
         `
           update public.workflow_secrets
@@ -169,15 +219,28 @@ export function createSecretQueries(db: Queryable = getPool()): SecretQueries {
           returning id, workspace_id, name, description, status, key_version,
                     created_at, updated_at, rotated_at
         `,
-        [secretId, encrypted.ciphertext, encrypted.nonce, encrypted.authTag, encrypted.keyVersion],
+        [
+          secretId,
+          encrypted.ciphertext,
+          encrypted.nonce,
+          encrypted.authTag,
+          encrypted.keyVersion,
+        ],
       );
       return mapRow(result.rows[0]!);
     },
 
     async updateSecretStatus(secretId, status) {
       const result = await db.query<{
-        id: string; workspace_id: string; name: string; description: string | null;
-        status: string; key_version: string; created_at: Date; updated_at: Date; rotated_at: Date | null;
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        status: string;
+        key_version: string;
+        created_at: Date;
+        updated_at: Date;
+        rotated_at: Date | null;
       }>(
         `
           update public.workflow_secrets

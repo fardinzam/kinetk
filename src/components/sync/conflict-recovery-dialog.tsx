@@ -28,12 +28,24 @@ function buildDiffSummary(events: WorkflowEvent[]): DiffSummary {
 
   for (const event of events) {
     switch (event.type) {
-      case "node_added": summary.nodesAdded++; break;
-      case "node_deleted": summary.nodesDeleted++; break;
-      case "node_moved": summary.nodesMoved++; break;
-      case "node_updated": summary.nodesUpdated++; break;
-      case "edge_added": summary.edgesAdded++; break;
-      case "edge_deleted": summary.edgesDeleted++; break;
+      case "node_added":
+        summary.nodesAdded++;
+        break;
+      case "node_deleted":
+        summary.nodesDeleted++;
+        break;
+      case "node_moved":
+        summary.nodesMoved++;
+        break;
+      case "node_updated":
+        summary.nodesUpdated++;
+        break;
+      case "edge_added":
+        summary.edgesAdded++;
+        break;
+      case "edge_deleted":
+        summary.edgesDeleted++;
+        break;
     }
   }
 
@@ -42,12 +54,30 @@ function buildDiffSummary(events: WorkflowEvent[]): DiffSummary {
 
 function formatDiffSummary(summary: DiffSummary): string {
   const parts: string[] = [];
-  if (summary.nodesAdded > 0) parts.push(`${summary.nodesAdded} node${summary.nodesAdded !== 1 ? "s" : ""} added`);
-  if (summary.nodesDeleted > 0) parts.push(`${summary.nodesDeleted} node${summary.nodesDeleted !== 1 ? "s" : ""} deleted`);
-  if (summary.nodesMoved > 0) parts.push(`${summary.nodesMoved} node${summary.nodesMoved !== 1 ? "s" : ""} moved`);
-  if (summary.nodesUpdated > 0) parts.push(`${summary.nodesUpdated} node${summary.nodesUpdated !== 1 ? "s" : ""} updated`);
-  if (summary.edgesAdded > 0) parts.push(`${summary.edgesAdded} edge${summary.edgesAdded !== 1 ? "s" : ""} added`);
-  if (summary.edgesDeleted > 0) parts.push(`${summary.edgesDeleted} edge${summary.edgesDeleted !== 1 ? "s" : ""} deleted`);
+  if (summary.nodesAdded > 0)
+    parts.push(
+      `${summary.nodesAdded} node${summary.nodesAdded !== 1 ? "s" : ""} added`,
+    );
+  if (summary.nodesDeleted > 0)
+    parts.push(
+      `${summary.nodesDeleted} node${summary.nodesDeleted !== 1 ? "s" : ""} deleted`,
+    );
+  if (summary.nodesMoved > 0)
+    parts.push(
+      `${summary.nodesMoved} node${summary.nodesMoved !== 1 ? "s" : ""} moved`,
+    );
+  if (summary.nodesUpdated > 0)
+    parts.push(
+      `${summary.nodesUpdated} node${summary.nodesUpdated !== 1 ? "s" : ""} updated`,
+    );
+  if (summary.edgesAdded > 0)
+    parts.push(
+      `${summary.edgesAdded} edge${summary.edgesAdded !== 1 ? "s" : ""} added`,
+    );
+  if (summary.edgesDeleted > 0)
+    parts.push(
+      `${summary.edgesDeleted} edge${summary.edgesDeleted !== 1 ? "s" : ""} deleted`,
+    );
   return parts.join(" · ") || "No graph changes";
 }
 
@@ -93,26 +123,18 @@ export function ConflictRecoveryDialog({
         <p aria-label="Diff summary">{formatDiffSummary(diffSummary)}</p>
       )}
 
-      <button
-        onClick={() => downloadLocalCopy(workflowId, db)}
-        type="button"
-      >
+      <button onClick={() => downloadLocalCopy(workflowId, db)} type="button">
         Download local copy
       </button>
 
       {!confirmingDiscard ? (
-        <button
-          onClick={() => setConfirmingDiscard(true)}
-          type="button"
-        >
+        <button onClick={() => setConfirmingDiscard(true)} type="button">
           Discard local changes and reload
         </button>
       ) : (
-        <button
-          onClick={onDiscardConfirmed}
-          type="button"
-        >
-          Are you sure? This will permanently discard {pendingCount} unsaved edit{pendingCount !== 1 ? "s" : ""}. Confirm discard
+        <button onClick={onDiscardConfirmed} type="button">
+          Are you sure? This will permanently discard {pendingCount} unsaved
+          edit{pendingCount !== 1 ? "s" : ""}. Confirm discard
         </button>
       )}
 

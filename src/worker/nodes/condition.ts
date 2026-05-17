@@ -9,12 +9,18 @@ function evaluate(
   right: unknown,
 ): boolean {
   switch (operator) {
-    case "equals": return left === right;
-    case "not_equals": return left !== right;
-    case "greater_than": return Number(left) > Number(right);
-    case "less_than": return Number(left) < Number(right);
-    case "exists": return left !== null && left !== undefined;
-    case "does_not_exist": return left === null || left === undefined;
+    case "equals":
+      return left === right;
+    case "not_equals":
+      return left !== right;
+    case "greater_than":
+      return Number(left) > Number(right);
+    case "less_than":
+      return Number(left) < Number(right);
+    case "exists":
+      return left !== null && left !== undefined;
+    case "does_not_exist":
+      return left === null || left === undefined;
   }
 }
 
@@ -23,9 +29,17 @@ export const conditionExecutor: NodeExecutor = async ({ config, context }) => {
 
   const left = resolvePath(context, leftPath);
   if (isPathResolveError(left)) {
-    return { ok: false, error: `Path not found: ${leftPath}`, retryable: false };
+    return {
+      ok: false,
+      error: `Path not found: ${leftPath}`,
+      retryable: false,
+    };
   }
 
   const result = evaluate(left, operator, rightValue);
-  return { ok: true, output: context.currentPayload, branch: result ? "true" : "false" };
+  return {
+    ok: true,
+    output: context.currentPayload,
+    branch: result ? "true" : "false",
+  };
 };

@@ -50,7 +50,9 @@ describe("resolvePath", () => {
   });
 
   it("resolves a node output", () => {
-    const ctx = setNodeOutput(createRunContext(payload), "node_1", { score: 42 });
+    const ctx = setNodeOutput(createRunContext(payload), "node_1", {
+      score: 42,
+    });
     expect(resolvePath(ctx, "nodes.node_1.score")).toBe(42);
   });
 

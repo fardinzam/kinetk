@@ -59,9 +59,7 @@ export type TransformJsonNodeConfig = z.infer<
   typeof transformJsonNodeConfigSchema
 >;
 export type ConditionNodeConfig = z.infer<typeof conditionNodeConfigSchema>;
-export type HttpRequestNodeConfig = z.infer<
-  typeof httpRequestNodeConfigSchema
->;
+export type HttpRequestNodeConfig = z.infer<typeof httpRequestNodeConfigSchema>;
 export type LogNodeConfig = z.infer<typeof logNodeConfigSchema>;
 
 export type NodeConfigByType = {

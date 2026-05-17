@@ -24,13 +24,24 @@ export function RunDetail({ run, steps }: RunDetailProps) {
       <header>
         <h1>Run {run.id.slice(0, 8)}…</h1>
         <dl>
-          <dt>Status</dt><dd>{run.status}</dd>
-          <dt>Steps</dt><dd>{run.stepCount}</dd>
-          <dt>Queued</dt><dd>{formatDate(run.queuedAt)}</dd>
-          <dt>Started</dt><dd>{formatDate(run.startedAt)}</dd>
-          <dt>Finished</dt><dd>{formatDate(run.finishedAt)}</dd>
-          <dt>Duration</dt><dd>{durationMs(run.startedAt, run.finishedAt)}</dd>
-          {run.errorSummary && <><dt>Error</dt><dd>{run.errorSummary}</dd></>}
+          <dt>Status</dt>
+          <dd>{run.status}</dd>
+          <dt>Steps</dt>
+          <dd>{run.stepCount}</dd>
+          <dt>Queued</dt>
+          <dd>{formatDate(run.queuedAt)}</dd>
+          <dt>Started</dt>
+          <dd>{formatDate(run.startedAt)}</dd>
+          <dt>Finished</dt>
+          <dd>{formatDate(run.finishedAt)}</dd>
+          <dt>Duration</dt>
+          <dd>{durationMs(run.startedAt, run.finishedAt)}</dd>
+          {run.errorSummary && (
+            <>
+              <dt>Error</dt>
+              <dd>{run.errorSummary}</dd>
+            </>
+          )}
         </dl>
         <a href={`/workflows/${run.workflowId}?runId=${run.id}`}>
           Open in editor

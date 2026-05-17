@@ -50,12 +50,16 @@ function createWorkflowQueries(): WorkflowQueries & {
       return workflow;
     },
     async listWorkflowsForWorkspace(workspaceId) {
-      return workflows.filter((workflow) => workflow.workspaceId === workspaceId);
+      return workflows.filter(
+        (workflow) => workflow.workspaceId === workspaceId,
+      );
     },
     async findWorkflowById(workflowId) {
       return workflows.find((workflow) => workflow.id === workflowId) ?? null;
     },
-    async findWorkflowWithGraphById(workflowId): Promise<WorkflowRecord | null> {
+    async findWorkflowWithGraphById(
+      workflowId,
+    ): Promise<WorkflowRecord | null> {
       const workflow = workflows.find((w) => w.id === workflowId);
       if (!workflow) return null;
       return { ...workflow, graph: EMPTY_GRAPH };
@@ -139,7 +143,10 @@ describe("workflow service", () => {
     );
 
     await expect(
-      getWorkflowForUser({ userId: "user_1", workflowId: workflow.id }, queries),
+      getWorkflowForUser(
+        { userId: "user_1", workflowId: workflow.id },
+        queries,
+      ),
     ).resolves.toMatchObject({
       id: workflow.id,
       workspaceId: "workspace_1",
@@ -156,7 +163,10 @@ describe("workflow service", () => {
     );
 
     await expect(
-      getWorkflowForUser({ userId: "outsider", workflowId: workflow.id }, queries),
+      getWorkflowForUser(
+        { userId: "outsider", workflowId: workflow.id },
+        queries,
+      ),
     ).rejects.toMatchObject({ code: "workflow_not_found" });
   });
 });

@@ -65,7 +65,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div>
         <label htmlFor={`${mode}-password`}>Password</label>
         <input
-          autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+          autoComplete={
+            mode === "sign-in" ? "current-password" : "new-password"
+          }
           id={`${mode}-password`}
           minLength={8}
           name="password"

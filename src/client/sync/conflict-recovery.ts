@@ -9,7 +9,11 @@ export async function downloadLocalCopy(
   const snapshot = await loadSnapshot(db, workflowId);
   const pendingEvents = await getPendingEvents(db, workflowId);
 
-  const payload = JSON.stringify({ workflowId, snapshot, pendingEvents }, null, 2);
+  const payload = JSON.stringify(
+    { workflowId, snapshot, pendingEvents },
+    null,
+    2,
+  );
   const blob = new Blob([payload], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 

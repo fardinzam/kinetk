@@ -3,10 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { clearPendingEvents, addPendingEvent, getPendingEvents } from "@/client/db/pending-event-store";
-import { deleteSnapshot, loadSnapshot, saveSnapshot } from "@/client/db/workflow-store";
-import { openFlowForgeDB, type FlowForgeDatabase } from "@/client/db/indexed-db";
-import { getSyncMetadata, setSyncMetadata } from "@/client/db/sync-metadata-store";
+import {
+  clearPendingEvents,
+  addPendingEvent,
+  getPendingEvents,
+} from "@/client/db/pending-event-store";
+import {
+  deleteSnapshot,
+  loadSnapshot,
+  saveSnapshot,
+} from "@/client/db/workflow-store";
+import {
+  openFlowForgeDB,
+  type FlowForgeDatabase,
+} from "@/client/db/indexed-db";
+import {
+  getSyncMetadata,
+  setSyncMetadata,
+} from "@/client/db/sync-metadata-store";
 import {
   createLocalEventQueue,
   type LocalEventQueue,
@@ -23,6 +37,7 @@ import type { WorkflowGraph } from "@/domain/workflows/types";
 
 import { ConflictRecoveryDialog } from "../sync/conflict-recovery-dialog";
 import { RefreshRequiredBanner } from "../sync/refresh-required-banner";
+import { SyncStatusBadge } from "../sync/sync-status-badge";
 import { WorkflowEditor } from "../editor/workflow-editor";
 
 const EMPTY_GRAPH: WorkflowGraph = {
@@ -42,7 +57,14 @@ type Props = {
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
 };
 
-export function WorkflowEditorWithPersistence({ workflowId, workflowName, workspaceId, serverGraph, serverRevision, nodeStatusMap }: Props) {
+export function WorkflowEditorWithPersistence({
+  workflowId,
+  workflowName,
+  workspaceId,
+  serverGraph,
+  serverRevision,
+  nodeStatusMap,
+}: Props) {
   const router = useRouter();
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialGraph, setInitialGraph] = useState<WorkflowGraph>(EMPTY_GRAPH);
@@ -60,6 +82,7 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, worksp
   const syncDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const serverGraphRef = useRef(serverGraph);
   const subRef = useRef<WorkflowSubscription | null>(null);
+  const localClientEventIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -74,9 +97,8 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, worksp
         add: (wfId, event) => addPendingEvent(db, wfId, event),
         getAll: (wfId) => getPendingEvents(db, wfId),
         remove: async (wfId, clientEventId) => {
-          const { removePendingEvent } = await import(
-            "@/client/db/pending-event-store"
-          );
+          const { removePendingEvent } =
+            await import("@/client/db/pending-event-store");
           await removePendingEvent(db, wfId, clientEventId);
         },
       });
@@ -105,24 +127,31 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, worksp
       // Open realtime subscription for remote edits and run updates
       subRef.current = subscribeToWorkflow(workflowId, currentRevision, {
         onWorkflowEvents: async (events, latestRevision) => {
-          const currentQueue = queueRef.current;
           const currentDb = dbRef.current;
           if (!currentDb) return;
 
-          // Skip remote events if there are pending local edits
-          // (local state is source of truth until synced)
-          const pending = currentQueue ? await currentQueue.getPendingEvents() : [];
-          if (pending.length > 0) return;
+          // Filter out events this session already applied locally.
+          // IndexedDB is shared across tabs, so checking the pending queue would
+          // incorrectly block the other window from applying events the first window wrote.
+          const novelEvents = events.filter(
+            (e) => !localClientEventIdsRef.current.has(e.clientEventId),
+          );
 
-          let graph = graphRef.current;
-          for (const event of events) {
-            graph = applyWorkflowEvent({ name: workflowName, graph }, event).graph;
+          if (novelEvents.length > 0) {
+            let graph = graphRef.current;
+            for (const event of novelEvents) {
+              graph = applyWorkflowEvent(
+                { name: workflowName, graph },
+                event,
+              ).graph;
+            }
+            graphRef.current = graph;
+            await saveSnapshot(currentDb, workflowId, graph);
+            setInitialGraph(graph);
+            setRemountKey((k) => k + 1);
           }
-          graphRef.current = graph;
-          await saveSnapshot(currentDb, workflowId, graph);
+
           await setSyncMetadata(currentDb, workflowId, latestRevision);
-          setInitialGraph(graph);
-          setRemountKey((k) => k + 1);
         },
         onRunsUpdated: () => {
           router.refresh();
@@ -149,6 +178,7 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, worksp
       if (!db || !queue) return;
 
       await queue.enqueue(event);
+      localClientEventIdsRef.current.add(event.clientEventId);
 
       const newGraph = applyWorkflowEvent(
         { name: workflowName, graph: graphRef.current },
@@ -187,7 +217,7 @@ export function WorkflowEditorWithPersistence({ workflowId, workflowName, worksp
 
   return (
     <section>
-      <p>Status: {syncStatus}</p>
+      <SyncStatusBadge status={syncStatus} />
       {syncStatus === "refresh_required" && (
         <RefreshRequiredBanner onResolve={() => setShowRecoveryDialog(true)} />
       )}

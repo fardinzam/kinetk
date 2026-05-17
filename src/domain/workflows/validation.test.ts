@@ -46,7 +46,9 @@ describe("validateExecutableGraph", () => {
     expect(
       codesFor({
         ...validGraph(),
-        nodes: validGraph().nodes.filter((node) => node.type !== "webhook_trigger"),
+        nodes: validGraph().nodes.filter(
+          (node) => node.type !== "webhook_trigger",
+        ),
       }),
     ).toContain("invalid_trigger_count");
 
@@ -105,7 +107,9 @@ describe("validateExecutableGraph", () => {
           },
         ],
       }),
-    ).toEqual(expect.arrayContaining(["edge_missing_source", "edge_missing_target"]));
+    ).toEqual(
+      expect.arrayContaining(["edge_missing_source", "edge_missing_target"]),
+    );
   });
 
   it("rejects unsupported node types", () => {

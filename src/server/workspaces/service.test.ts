@@ -9,7 +9,11 @@ import type { WorkspaceQueries } from "./queries";
 
 function createWorkspaceQueries(): WorkspaceQueries & {
   workspaces: Array<{ id: string; ownerId: string; name: string }>;
-  members: Array<{ workspaceId: string; userId: string; role: "owner" | "member" }>;
+  members: Array<{
+    workspaceId: string;
+    userId: string;
+    role: "owner" | "member";
+  }>;
 } {
   const users = new Map<string, { email: string; name: string | null }>();
   const workspaces: Array<{ id: string; ownerId: string; name: string }> = [];
@@ -29,7 +33,9 @@ function createWorkspaceQueries(): WorkspaceQueries & {
       });
     },
     async findOwnedWorkspace(userId) {
-      return workspaces.find((workspace) => workspace.ownerId === userId) ?? null;
+      return (
+        workspaces.find((workspace) => workspace.ownerId === userId) ?? null
+      );
     },
     async createWorkspace(input) {
       const workspace = {

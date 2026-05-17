@@ -55,19 +55,21 @@ export function WorkflowEditor({
     canUndo,
     canRedo,
   } = useEditorHistory(initialGraph);
-  const [connectingFromNodeId, setConnectingFromNodeId] = useState<string | null>(
-    null,
-  );
+  const [connectingFromNodeId, setConnectingFromNodeId] = useState<
+    string | null
+  >(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const onLocalEventRef = useRef(onLocalEvent);
-  useEffect(() => { onLocalEventRef.current = onLocalEvent; });
+  useEffect(() => {
+    onLocalEventRef.current = onLocalEvent;
+  });
 
   const nodesById = useMemo(
     () => new Map(state.graph.nodes.map((node) => [node.id, node])),
     [state.graph.nodes],
   );
   const selectedNode = state.selectedNodeId
-    ? nodesById.get(state.selectedNodeId) ?? null
+    ? (nodesById.get(state.selectedNodeId) ?? null)
     : null;
   const validationResult = useMemo(
     () => validateExecutableGraph(state.graph),
@@ -115,7 +117,9 @@ export function WorkflowEditor({
 
     function handlePointerUp() {
       applyState((current) => {
-        const node = current.graph.nodes.find((n) => n.id === activeDrag.nodeId);
+        const node = current.graph.nodes.find(
+          (n) => n.id === activeDrag.nodeId,
+        );
         if (node) {
           onLocalEventRef.current?.({
             clientEventId: nanoid(),
@@ -168,13 +172,13 @@ export function WorkflowEditor({
           if (addedNode) {
             // WorkflowNode<NodeType> is structurally correct but doesn't satisfy
             // Zod's discriminated union — cast through unknown
-            onLocalEvent?.(({
+            onLocalEvent?.({
               clientEventId: nanoid(),
               type: "node_added",
               eventSchemaVersion: 1,
               payload: { node: addedNode },
               createdAt: new Date().toISOString(),
-            }) as unknown as WorkflowEvent);
+            } as unknown as WorkflowEvent);
           }
         }}
       />
@@ -248,7 +252,11 @@ export function WorkflowEditor({
               <details>
                 <summary>Error</summary>
                 <pre style={{ fontSize: 12, whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(nodeStatusMap.get(selectedNode.id)!.errorJson, null, 2)}
+                  {JSON.stringify(
+                    nodeStatusMap.get(selectedNode.id)!.errorJson,
+                    null,
+                    2,
+                  )}
                 </pre>
               </details>
             )}
@@ -262,7 +270,9 @@ export function WorkflowEditor({
             return;
           }
 
-          applyGraphChange((current) => updateSelectedNodeConfig(current, config));
+          applyGraphChange((current) =>
+            updateSelectedNodeConfig(current, config),
+          );
           onLocalEvent?.({
             clientEventId: nanoid(),
             type: "node_updated",

@@ -70,7 +70,11 @@ describe("applyWorkflowEvent", () => {
             id: "condition",
             type: "condition",
             position: { x: 480, y: 0 },
-            config: { leftPath: "amount", operator: "greater_than", rightValue: 1000 },
+            config: {
+              leftPath: "amount",
+              operator: "greater_than",
+              rightValue: 1000,
+            },
           },
         },
         createdAt,
@@ -84,7 +88,11 @@ describe("applyWorkflowEvent", () => {
         eventSchemaVersion: 1,
         payload: {
           nodeId: "condition",
-          config: { leftPath: "amount", operator: "less_than", rightValue: 5000 },
+          config: {
+            leftPath: "amount",
+            operator: "less_than",
+            rightValue: 5000,
+          },
         },
         createdAt,
       }),
@@ -136,10 +144,12 @@ describe("applyWorkflowEvent", () => {
       }),
     );
 
-    expect(withEdge.graph.edges.map((edgeItem) => edgeItem.id)).toContain("edge_2");
-    expect(withoutEdge.graph.edges.map((edgeItem) => edgeItem.id)).not.toContain(
+    expect(withEdge.graph.edges.map((edgeItem) => edgeItem.id)).toContain(
       "edge_2",
     );
+    expect(
+      withoutEdge.graph.edges.map((edgeItem) => edgeItem.id),
+    ).not.toContain("edge_2");
   });
 
   it("deletes nodes and connected edges", () => {
