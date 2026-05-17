@@ -1,13 +1,17 @@
 import type { Queryable } from "@/server/db/pool";
 
-export async function succeedRun(db: Queryable, runId: string): Promise<void> {
+export async function succeedRun(
+  db: Queryable,
+  runId: string,
+  stepCount: number,
+): Promise<void> {
   await db.query(
     `
       update public.workflow_runs
-      set status = 'succeeded', finished_at = now()
+      set status = 'succeeded', finished_at = now(), step_count = $2
       where id = $1
     `,
-    [runId],
+    [runId, stepCount],
   );
 }
 
@@ -15,14 +19,15 @@ export async function failRun(
   db: Queryable,
   runId: string,
   errorSummary: string,
+  stepCount: number = 0,
 ): Promise<void> {
   await db.query(
     `
       update public.workflow_runs
-      set status = 'failed', finished_at = now(), error_summary = $2
+      set status = 'failed', finished_at = now(), error_summary = $2, step_count = $3
       where id = $1
     `,
-    [runId, errorSummary],
+    [runId, errorSummary, stepCount],
   );
 }
 

@@ -92,13 +92,13 @@ export async function executeRun(run: ClaimedRun, db: Queryable): Promise<void> 
   while (queue.length > 0) {
     // Guard: step limit
     if (stepCount >= run.maxSteps) {
-      await failRun(db, run.id, "run_limit_exceeded");
+      await failRun(db, run.id, "run_limit_exceeded", stepCount);
       return;
     }
 
     // Guard: timeout
     if (Date.now() - startTime >= run.timeoutMs) {
-      await failRun(db, run.id, "timeout_exceeded");
+      await failRun(db, run.id, "timeout_exceeded", stepCount);
       return;
     }
 
@@ -135,7 +135,7 @@ export async function executeRun(run: ClaimedRun, db: Queryable): Promise<void> 
       if (result.retryable && run.runAttempt < MAX_HTTP_RETRIES) {
         await scheduleRetry(db, run.id, getRetryDelayMs(run.runAttempt));
       } else {
-        await failRun(db, run.id, result.error);
+        await failRun(db, run.id, result.error, stepCount);
       }
       return;
     }
@@ -150,5 +150,5 @@ export async function executeRun(run: ClaimedRun, db: Queryable): Promise<void> 
     queue.push(...nextIds);
   }
 
-  await succeedRun(db, run.id);
+  await succeedRun(db, run.id, stepCount);
 }
