@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "worker:dev": "tsx --env-file .env.local --tsconfig tsconfig.worker.json src/worker/index.ts"
+    "worker:dev": "TSX_TSCONFIG_PATH=tsconfig.worker.json tsx --env-file .env.local src/worker/index.ts"
   },
   "repository": {
     "type": "git",
