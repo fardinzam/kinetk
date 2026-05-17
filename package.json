@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "worker:dev": "tsx src/worker/index.ts"
+    "worker:dev": "tsx --env-file .env.local src/worker/index.ts"
   },
   "repository": {
     "type": "git",
