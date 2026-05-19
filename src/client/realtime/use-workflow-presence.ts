@@ -52,7 +52,9 @@ export function useWorkflowPresence(
     typeof browserSupabase.channel
   > | null>(null);
   const selfRef = useRef(self);
-  selfRef.current = self;
+  useEffect(() => {
+    selfRef.current = self;
+  });
 
   useEffect(() => {
     const channel = browserSupabase.channel(
