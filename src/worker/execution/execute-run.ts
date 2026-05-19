@@ -34,7 +34,7 @@ async function writeStepRun(
          input_json, output_json, error_json, duration_ms, attempt,
          started_at, finished_at)
       values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9, $10,
-              now() - ($9 || ' milliseconds')::interval, now())
+              now() - ($9 * interval '1 millisecond'), now())
     `,
     [
       params.runId,
