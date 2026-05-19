@@ -12,6 +12,7 @@ type AuthFormProps = {
 export function AuthForm({ mode }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,10 +46,28 @@ export function AuthForm({ mode }: AuthFormProps) {
       return;
     }
 
+    if (mode === "sign-up") {
+      if (result.data?.session) {
+        window.location.assign("/workflows");
+      } else {
+        setCheckEmail(true);
+      }
+      return;
+    }
+
     window.location.assign("/workflows");
   }
 
   const actionLabel = mode === "sign-in" ? "Sign in" : "Create account";
+
+  if (checkEmail) {
+    return (
+      <div>
+        <p>Check your inbox — we sent a confirmation link to your email.</p>
+        <p>Click the link to activate your account and sign in.</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

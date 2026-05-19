@@ -24,5 +24,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL("/workflows", requestUrl.origin));
+  const next = requestUrl.searchParams.get("next");
+  const redirectTo =
+    next && next.startsWith("/")
+      ? new URL(next, requestUrl.origin)
+      : new URL("/workflows", requestUrl.origin);
+  return NextResponse.redirect(redirectTo);
 }
