@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { nanoid } from "nanoid";
 
+import type { PresenceUser } from "@/client/realtime/use-workflow-presence";
 import type { WorkflowEvent } from "@/domain/workflows/events";
 import { validateExecutableGraph } from "@/domain/workflows/validation";
 import type { WorkflowGraph, WorkflowPosition } from "@/domain/workflows/types";
@@ -29,8 +30,10 @@ type NodeStepStatus = { status: string; errorJson?: unknown };
 
 type WorkflowEditorProps = {
   initialGraph: WorkflowGraph;
+  presenceUsers?: PresenceUser[];
   workspaceId?: string;
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
+  onCursorMove?: (x: number, y: number) => void;
   onLocalEvent?(event: WorkflowEvent): void;
 };
 
@@ -41,8 +44,10 @@ type DragState = {
 
 export function WorkflowEditor({
   initialGraph,
+  presenceUsers,
   workspaceId,
   nodeStatusMap,
+  onCursorMove,
   onLocalEvent,
 }: WorkflowEditorProps) {
   const {
@@ -207,9 +212,11 @@ export function WorkflowEditor({
       <Canvas
         connectingFromNodeId={connectingFromNodeId}
         graph={state.graph}
+        presenceUsers={presenceUsers}
         selectedNodeId={state.selectedNodeId}
         nodeStatusMap={nodeStatusMap}
         onConnectFrom={setConnectingFromNodeId}
+        onCursorMove={onCursorMove}
         onConnectTo={(nodeId) => {
           if (!connectingFromNodeId) {
             return;
