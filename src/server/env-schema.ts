@@ -27,6 +27,7 @@ const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
   APP_ENCRYPTION_KEY_BASE64: encryptionKeySchema,
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  RESEND_API_KEY: z.string().min(1),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
