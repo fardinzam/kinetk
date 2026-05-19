@@ -1,0 +1,8 @@
+app = "kinetk"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile.worker"
+
+[env]
+  NODE_ENV = "production"
