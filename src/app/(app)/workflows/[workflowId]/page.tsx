@@ -63,6 +63,8 @@ export default async function WorkflowDetailPage({
         workflowId={workflowId}
         workflowName={workflow.name}
         workspaceId={workflow.workspaceId}
+        userId={user.id}
+        displayName={user.user_metadata?.name ?? user.email}
         serverGraph={workflow.graph}
         serverRevision={workflow.version}
         nodeStatusMap={nodeStatusMap}

@@ -31,6 +31,7 @@ import {
   subscribeToWorkflow,
   type WorkflowSubscription,
 } from "@/client/realtime/workflow-subscription";
+import { useWorkflowPresence } from "@/client/realtime/use-workflow-presence";
 import type { WorkflowEvent } from "@/domain/workflows/events";
 import { applyWorkflowEvent } from "@/domain/workflows/reducer";
 import type { WorkflowGraph } from "@/domain/workflows/types";
@@ -52,6 +53,8 @@ type Props = {
   workflowId: string;
   workflowName: string;
   workspaceId: string;
+  userId: string;
+  displayName: string;
   serverGraph: WorkflowGraph;
   serverRevision: number;
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
@@ -61,6 +64,8 @@ export function WorkflowEditorWithPersistence({
   workflowId,
   workflowName,
   workspaceId,
+  userId,
+  displayName,
   serverGraph,
   serverRevision,
   nodeStatusMap,
@@ -83,6 +88,11 @@ export function WorkflowEditorWithPersistence({
   const serverGraphRef = useRef(serverGraph);
   const subRef = useRef<WorkflowSubscription | null>(null);
   const localClientEventIdsRef = useRef<Set<string>>(new Set());
+
+  const { presenceUsers, viewerCount, trackCursor } = useWorkflowPresence(
+    workflowId,
+    { userId, displayName },
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -218,6 +228,7 @@ export function WorkflowEditorWithPersistence({
   return (
     <section>
       <SyncStatusBadge status={syncStatus} />
+      {viewerCount > 1 && <p>{viewerCount} viewing</p>}
       {syncStatus === "refresh_required" && (
         <RefreshRequiredBanner onResolve={() => setShowRecoveryDialog(true)} />
       )}
@@ -234,8 +245,10 @@ export function WorkflowEditorWithPersistence({
       <WorkflowEditor
         key={remountKey}
         initialGraph={initialGraph}
+        presenceUsers={presenceUsers}
         workspaceId={workspaceId}
         nodeStatusMap={nodeStatusMap}
+        onCursorMove={trackCursor}
         onLocalEvent={handleLocalEvent}
       />
     </section>
