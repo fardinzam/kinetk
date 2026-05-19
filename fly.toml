@@ -1,8 +1,13 @@
 app = "kinetk"
-primary_region = "sjc"
+primary_region = "lax"
 
 [build]
   dockerfile = "Dockerfile.worker"
 
 [env]
   NODE_ENV = "production"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
