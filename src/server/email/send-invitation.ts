@@ -1,6 +1,6 @@
 import "server-only";
 
-import { resend } from "./client";
+import { getResendClient } from "./client";
 
 type SendInvitationParams = {
   toEmail: string;
@@ -12,7 +12,7 @@ type SendInvitationParams = {
 export async function sendInvitationEmail(
   params: SendInvitationParams,
 ): Promise<void> {
-  await resend.emails.send({
+  await getResendClient().emails.send({
     from: "Kinetk <noreply@kinetk.com>",
     to: params.toEmail,
     subject: `You've been invited to ${params.workspaceName} on Kinetk`,
