@@ -3,6 +3,13 @@ import { getPool } from "@/server/db/pool";
 
 export type WorkspaceRole = "owner" | "member";
 
+export type WorkspaceMember = {
+  userId: string;
+  email: string;
+  name: string | null;
+  role: WorkspaceRole;
+};
+
 export type WorkspaceSummary = {
   id: string;
   name: string;
@@ -33,6 +40,8 @@ export type WorkspaceQueries = {
   }): Promise<void>;
   listWorkspacesForUser(userId: string): Promise<WorkspaceSummary[]>;
   userCanAccessWorkspace(userId: string, workspaceId: string): Promise<boolean>;
+  listMembersForWorkspace(workspaceId: string): Promise<WorkspaceMember[]>;
+  removeWorkspaceMember(workspaceId: string, userId: string): Promise<void>;
 };
 
 export function createWorkspaceQueries(
@@ -137,6 +146,38 @@ export function createWorkspaceQueries(
       );
 
       return result.rows[0]?.exists ?? false;
+    },
+    async listMembersForWorkspace(workspaceId) {
+      const result = await db.query<{
+        user_id: string;
+        email: string;
+        name: string | null;
+        role: WorkspaceRole;
+      }>(
+        `
+          select wm.user_id, u.email, u.name, wm.role
+          from public.workspace_members wm
+          join public.users u on u.id = wm.user_id
+          where wm.workspace_id = $1
+          order by wm.created_at asc
+        `,
+        [workspaceId],
+      );
+      return result.rows.map((row) => ({
+        userId: row.user_id,
+        email: row.email,
+        name: row.name,
+        role: row.role,
+      }));
+    },
+    async removeWorkspaceMember(workspaceId, userId) {
+      await db.query(
+        `
+          delete from public.workspace_members
+          where workspace_id = $1 and user_id = $2
+        `,
+        [workspaceId, userId],
+      );
     },
   };
 }

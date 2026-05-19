@@ -1,4 +1,5 @@
 import type {
+  WorkspaceMember,
   WorkspaceQueries,
   WorkspaceRecord,
   WorkspaceSummary,
@@ -68,6 +69,48 @@ export async function listWorkspacesForUser(
   const workspaceQueries = await getWorkspaceQueries(queries);
 
   return workspaceQueries.listWorkspacesForUser(userId);
+}
+
+export async function getActiveWorkspaceForUser(
+  user: WorkspaceUser,
+  cookieActiveWorkspaceId?: string,
+): Promise<WorkspaceSummary> {
+  // Bootstrap ensures at least one workspace exists for the user.
+  const bootstrapped = await bootstrapDefaultWorkspace(user);
+
+  const workspaceQueries = await getWorkspaceQueries();
+  const workspaces = await workspaceQueries.listWorkspacesForUser(user.id);
+
+  if (cookieActiveWorkspaceId) {
+    const active = workspaces.find((w) => w.id === cookieActiveWorkspaceId);
+    if (active) return active;
+  }
+
+  // Fall back to the bootstrapped workspace (first in list by created_at).
+  return (
+    workspaces.find((w) => w.id === bootstrapped.id) ?? {
+      id: bootstrapped.id,
+      name: bootstrapped.name,
+      role: "owner" as const,
+    }
+  );
+}
+
+export async function listMembersForWorkspace(
+  workspaceId: string,
+  queries?: WorkspaceQueries,
+): Promise<WorkspaceMember[]> {
+  const workspaceQueries = await getWorkspaceQueries(queries);
+  return workspaceQueries.listMembersForWorkspace(workspaceId);
+}
+
+export async function removeWorkspaceMember(
+  workspaceId: string,
+  userId: string,
+  queries?: WorkspaceQueries,
+): Promise<void> {
+  const workspaceQueries = await getWorkspaceQueries(queries);
+  return workspaceQueries.removeWorkspaceMember(workspaceId, userId);
 }
 
 export async function userCanAccessWorkspace(

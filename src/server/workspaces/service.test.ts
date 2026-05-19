@@ -82,6 +82,15 @@ function createWorkspaceQueries(): WorkspaceQueries & {
           member.userId === userId && member.workspaceId === workspaceId,
       );
     },
+    async listMembersForWorkspace() {
+      return [];
+    },
+    async removeWorkspaceMember(workspaceId, userId) {
+      const idx = members.findIndex(
+        (m) => m.workspaceId === workspaceId && m.userId === userId,
+      );
+      if (idx !== -1) members.splice(idx, 1);
+    },
   };
 }
 
