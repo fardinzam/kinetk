@@ -86,6 +86,49 @@ export function Canvas({
           />
         ))}
       </div>
+      {presenceUsers && presenceUsers.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+          }}
+        >
+          {presenceUsers.map((u) => (
+            <div
+              key={u.userId}
+              style={{
+                position: "absolute",
+                left: u.x * graph.viewport.zoom + graph.viewport.x,
+                top: u.y * graph.viewport.zoom + graph.viewport.y,
+                transform: "translate(-2px, -2px)",
+                pointerEvents: "none",
+              }}
+            >
+              <svg
+                fill={u.color}
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+              >
+                <path d="M0 0 L0 12 L4 8 L8 16 L10 15 L6 7 L12 7 Z" />
+              </svg>
+              <span
+                style={{
+                  background: u.color,
+                  borderRadius: 3,
+                  color: "#fff",
+                  fontSize: 11,
+                  padding: "1px 4px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {u.displayName}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
