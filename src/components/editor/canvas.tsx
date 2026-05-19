@@ -1,3 +1,4 @@
+import type { PresenceUser } from "@/client/realtime/use-workflow-presence";
 import type { WorkflowGraph, WorkflowPosition } from "@/domain/workflows/types";
 
 import { EdgeLayer } from "./edge-layer";
@@ -8,10 +9,12 @@ type NodeStepStatus = { status: string };
 type CanvasProps = {
   connectingFromNodeId: string | null;
   graph: WorkflowGraph;
+  presenceUsers?: PresenceUser[];
   selectedNodeId: string | null;
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
   onConnectFrom(nodeId: string): void;
   onConnectTo(nodeId: string): void;
+  onCursorMove?: (x: number, y: number) => void;
   onDeleteEdge(edgeId: string): void;
   onNodePointerDown(nodeId: string, pointer: WorkflowPosition): void;
 };
@@ -19,10 +22,12 @@ type CanvasProps = {
 export function Canvas({
   connectingFromNodeId,
   graph,
+  presenceUsers,
   selectedNodeId,
   nodeStatusMap,
   onConnectFrom,
   onConnectTo,
+  onCursorMove,
   onDeleteEdge,
   onNodePointerDown,
 }: CanvasProps) {
@@ -38,6 +43,19 @@ export function Canvas({
         overflow: "hidden",
         position: "relative",
       }}
+      onPointerMove={
+        onCursorMove
+          ? (e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const graphX =
+                (e.clientX - rect.left - graph.viewport.x) /
+                graph.viewport.zoom;
+              const graphY =
+                (e.clientY - rect.top - graph.viewport.y) / graph.viewport.zoom;
+              onCursorMove(graphX, graphY);
+            }
+          : undefined
+      }
     >
       <div
         style={{
