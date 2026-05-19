@@ -46,16 +46,19 @@ export function AuthForm({ mode }: AuthFormProps) {
       return;
     }
 
+    const next = new URLSearchParams(window.location.search).get("next");
+    const redirectTo = next && next.startsWith("/") ? next : "/workflows";
+
     if (mode === "sign-up") {
       if (result.data?.session) {
-        window.location.assign("/workflows");
+        window.location.assign(redirectTo);
       } else {
         setCheckEmail(true);
       }
       return;
     }
 
-    window.location.assign("/workflows");
+    window.location.assign(redirectTo);
   }
 
   const actionLabel = mode === "sign-in" ? "Sign in" : "Create account";
