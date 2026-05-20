@@ -7,10 +7,9 @@ import { nanoid } from "nanoid";
 import { browserSupabase } from "@/client/supabase/browser";
 
 export type PresenceUser = {
+  sessionId: string;
   userId: string;
   displayName: string;
-  x: number;
-  y: number;
   color: string;
 };
 
@@ -53,17 +52,17 @@ export function useWorkflowPresence(
   self: { userId: string; displayName: string },
 ): {
   presenceUsers: PresenceUser[];
+  cursorPositionsRef: React.RefObject<Map<string, { x: number; y: number }>>;
   viewerCount: number;
   trackCursor: (x: number, y: number) => void;
 } {
-  // Presence: who is currently online (keyed by sessionId)
-  const [onlineMap, setOnlineMap] = useState<
-    Map<string, { userId: string; displayName: string }>
-  >(new Map());
-  // Broadcast: latest cursor positions (keyed by sessionId)
-  const [cursorMap, setCursorMap] = useState<
-    Map<string, { x: number; y: number }>
-  >(new Map());
+  const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
+
+  // Mutable ref for cursor positions — updated on every broadcast without
+  // triggering a React re-render. The canvas RAF loop reads from this directly.
+  const cursorPositionsRef = useRef<Map<string, { x: number; y: number }>>(
+    new Map(),
+  );
 
   const lastBroadcastRef = useRef<number>(0);
   const lastSentPosRef = useRef<{ x: number; y: number }>({
@@ -85,17 +84,28 @@ export function useWorkflowPresence(
 
     function syncPresence() {
       const state = channel.presenceState<TrackedState>();
-      const map = new Map<string, { userId: string; displayName: string }>();
+      const users: PresenceUser[] = [];
+      const activeSessionIds = new Set<string>();
+
       for (const presences of Object.values(state)) {
         for (const p of presences) {
           if (p.sessionId === sessionId) continue;
-          map.set(p.sessionId, {
+          activeSessionIds.add(p.sessionId);
+          users.push({
+            sessionId: p.sessionId,
             userId: p.userId,
             displayName: p.displayName,
+            color: colorForUser(p.userId),
           });
         }
       }
-      setOnlineMap(map);
+
+      // Prune stale cursor positions for users who have left
+      for (const sid of cursorPositionsRef.current.keys()) {
+        if (!activeSessionIds.has(sid)) cursorPositionsRef.current.delete(sid);
+      }
+
+      setPresenceUsers(users);
     }
 
     channel
@@ -107,9 +117,11 @@ export function useWorkflowPresence(
         { event: "cursor" },
         ({ payload }: { payload: CursorPayload }) => {
           if (payload.sessionId === sessionId) return;
-          setCursorMap((prev) =>
-            new Map(prev).set(payload.sessionId, { x: payload.x, y: payload.y }),
-          );
+          // Write directly to the ref — no setState, no re-render
+          cursorPositionsRef.current.set(payload.sessionId, {
+            x: payload.x,
+            y: payload.y,
+          });
         },
       )
       .subscribe(async (status) => {
@@ -154,24 +166,9 @@ export function useWorkflowPresence(
     [sessionId],
   );
 
-  // Merge: show only online users, with their latest broadcast position
-  const presenceUsers = useMemo<PresenceUser[]>(() => {
-    const users: PresenceUser[] = [];
-    for (const [sid, user] of onlineMap) {
-      const pos = cursorMap.get(sid) ?? { x: 0, y: 0 };
-      users.push({
-        userId: user.userId,
-        displayName: user.displayName,
-        x: pos.x,
-        y: pos.y,
-        color: colorForUser(user.userId),
-      });
-    }
-    return users;
-  }, [onlineMap, cursorMap]);
-
   return {
     presenceUsers,
+    cursorPositionsRef,
     viewerCount: presenceUsers.length + 1,
     trackCursor,
   };

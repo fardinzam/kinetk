@@ -89,10 +89,8 @@ export function WorkflowEditorWithPersistence({
   const subRef = useRef<WorkflowSubscription | null>(null);
   const localClientEventIdsRef = useRef<Set<string>>(new Set());
 
-  const { presenceUsers, viewerCount, trackCursor } = useWorkflowPresence(
-    workflowId,
-    { userId, displayName },
-  );
+  const { presenceUsers, cursorPositionsRef, viewerCount, trackCursor } =
+    useWorkflowPresence(workflowId, { userId, displayName });
 
   useEffect(() => {
     let cancelled = false;
@@ -246,6 +244,7 @@ export function WorkflowEditorWithPersistence({
         key={remountKey}
         initialGraph={initialGraph}
         presenceUsers={presenceUsers}
+        cursorPositionsRef={cursorPositionsRef}
         workspaceId={workspaceId}
         nodeStatusMap={nodeStatusMap}
         onCursorMove={trackCursor}

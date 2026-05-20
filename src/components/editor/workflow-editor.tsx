@@ -31,6 +31,7 @@ type NodeStepStatus = { status: string; errorJson?: unknown };
 type WorkflowEditorProps = {
   initialGraph: WorkflowGraph;
   presenceUsers?: PresenceUser[];
+  cursorPositionsRef?: React.RefObject<Map<string, { x: number; y: number }>>;
   workspaceId?: string;
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
   onCursorMove?: (x: number, y: number) => void;
@@ -45,6 +46,7 @@ type DragState = {
 export function WorkflowEditor({
   initialGraph,
   presenceUsers,
+  cursorPositionsRef,
   workspaceId,
   nodeStatusMap,
   onCursorMove,
@@ -213,6 +215,7 @@ export function WorkflowEditor({
         connectingFromNodeId={connectingFromNodeId}
         graph={state.graph}
         presenceUsers={presenceUsers}
+        cursorPositionsRef={cursorPositionsRef}
         selectedNodeId={state.selectedNodeId}
         nodeStatusMap={nodeStatusMap}
         onConnectFrom={setConnectingFromNodeId}
