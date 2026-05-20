@@ -1,8 +1,8 @@
-# FlowForge Execution and Observability Plan
+# Kinetk Execution and Observability Plan
 
 ## 1. Purpose
 
-This document defines how FlowForge turns a saved workflow graph into an executable run and how it captures enough detail for developers to debug failures.
+This document defines how Kinetk turns a saved workflow graph into an executable run and how it captures enough detail for developers to debug failures.
 
 The goal is not to build a complete automation platform. The goal is to execute a constrained set of node types reliably and make every step inspectable.
 

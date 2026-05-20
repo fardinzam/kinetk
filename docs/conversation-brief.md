@@ -4,7 +4,7 @@
 
 The selected direction is a local-first visual workflow builder, narrowed from a broad Zapier-style platform into a developer-focused webhook workflow tool.
 
-Working name: FlowForge.
+Working name: Kinetk.
 
 ## Why This Product Direction
 

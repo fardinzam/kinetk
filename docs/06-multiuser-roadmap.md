@@ -1,8 +1,8 @@
-# FlowForge Multi-User Roadmap
+# Kinetk Multi-User Roadmap
 
 ## 1. Purpose
 
-This roadmap extends FlowForge from a single-developer MVP into a publicly accessible, genuinely multi-user product. It picks up where the original implementation roadmap left off (after Phase 13) and covers going live, hardening security, enabling workspace collaboration, and adding real-time multiplayer presence.
+This roadmap extends Kinetk from a single-developer MVP into a publicly accessible, genuinely multi-user product. It picks up where the original implementation roadmap left off (after Phase 13) and covers going live, hardening security, enabling workspace collaboration, and adding real-time multiplayer presence.
 
 ## 2. Build Order Summary
 
@@ -34,8 +34,8 @@ Steps:
    ```
    Or paste `supabase/migrations/0001_initial_schema.sql` into the Supabase SQL editor and run it.
 3. In **Authentication → URL Configuration**, set:
-   - **Site URL**: production app URL (e.g. `https://flowforge.vercel.app`)
-   - **Redirect URLs**: `https://flowforge.vercel.app/auth/callback`
+   - **Site URL**: production app URL (e.g. `https://kinetk.vercel.app`)
+   - **Redirect URLs**: `https://kinetk.vercel.app/auth/callback`
 4. Collect required values from **Project Settings → API**:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`

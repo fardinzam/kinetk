@@ -1,8 +1,8 @@
-# FlowForge Implementation Roadmap
+# Kinetk Implementation Roadmap
 
 ## 1. Purpose
 
-This roadmap defines the order to build FlowForge. It assumes the repository starts with planning docs only and the implementation must be built from zero.
+This roadmap defines the order to build Kinetk. It assumes the repository starts with planning docs only and the implementation must be built from zero.
 
 The roadmap prioritizes a smooth, low-cost MVP:
 

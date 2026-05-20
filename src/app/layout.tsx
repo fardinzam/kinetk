@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "FlowForge",
+  title: "Kinetk",
   description: "A local-first webhook workflow builder for developers.",
 };
 
