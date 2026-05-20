@@ -14,7 +14,14 @@ export type PresenceUser = {
   color: string;
 };
 
+// Only join/leave identity — no position
 type TrackedState = {
+  sessionId: string;
+  userId: string;
+  displayName: string;
+};
+
+type CursorPayload = {
   sessionId: string;
   userId: string;
   displayName: string;
@@ -49,14 +56,23 @@ export function useWorkflowPresence(
   viewerCount: number;
   trackCursor: (x: number, y: number) => void;
 } {
-  const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
-  const lastTrackRef = useRef<number>(0);
+  // Presence: who is currently online (keyed by sessionId)
+  const [onlineMap, setOnlineMap] = useState<
+    Map<string, { userId: string; displayName: string }>
+  >(new Map());
+  // Broadcast: latest cursor positions (keyed by sessionId)
+  const [cursorMap, setCursorMap] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+
+  const lastBroadcastRef = useRef<number>(0);
+  const lastSentPosRef = useRef<{ x: number; y: number }>({
+    x: -Infinity,
+    y: -Infinity,
+  });
   const channelRef = useRef<ReturnType<typeof browserSupabase.channel> | null>(
     null,
   );
-  // Stable per-tab ID so multiple tabs of the same user are distinguished.
-  // useMemo with empty deps is stable across renders (unlike useRef.current which
-  // the react-hooks/refs rule forbids during render).
   const sessionId = useMemo(() => nanoid(), []);
   const selfRef = useRef(self);
   useEffect(() => {
@@ -69,34 +85,39 @@ export function useWorkflowPresence(
 
     function syncPresence() {
       const state = channel.presenceState<TrackedState>();
-      const users: PresenceUser[] = [];
+      const map = new Map<string, { userId: string; displayName: string }>();
       for (const presences of Object.values(state)) {
         for (const p of presences) {
           if (p.sessionId === sessionId) continue;
-          users.push({
+          map.set(p.sessionId, {
             userId: p.userId,
             displayName: p.displayName,
-            x: p.x,
-            y: p.y,
-            color: colorForUser(p.userId),
           });
         }
       }
-      setPresenceUsers(users);
+      setOnlineMap(map);
     }
 
     channel
       .on("presence", { event: "sync" }, syncPresence)
       .on("presence", { event: "join" }, syncPresence)
       .on("presence", { event: "leave" }, syncPresence)
+      .on(
+        "broadcast",
+        { event: "cursor" },
+        ({ payload }: { payload: CursorPayload }) => {
+          if (payload.sessionId === sessionId) return;
+          setCursorMap((prev) =>
+            new Map(prev).set(payload.sessionId, { x: payload.x, y: payload.y }),
+          );
+        },
+      )
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           await channel.track({
             sessionId,
             userId: selfRef.current.userId,
             displayName: selfRef.current.displayName,
-            x: 0,
-            y: 0,
           });
         }
       });
@@ -110,18 +131,44 @@ export function useWorkflowPresence(
   const trackCursor = useCallback(
     (x: number, y: number) => {
       const now = Date.now();
-      if (now - lastTrackRef.current < 33) return;
-      lastTrackRef.current = now;
-      void channelRef.current?.track({
-        sessionId,
-        userId: selfRef.current.userId,
-        displayName: selfRef.current.displayName,
-        x,
-        y,
+      if (now - lastBroadcastRef.current < 50) return; // 20fps cap
+      const rx = Math.round(x);
+      const ry = Math.round(y);
+      const dx = rx - lastSentPosRef.current.x;
+      const dy = ry - lastSentPosRef.current.y;
+      if (dx * dx + dy * dy < 16) return; // skip moves < 4px
+      lastBroadcastRef.current = now;
+      lastSentPosRef.current = { x: rx, y: ry };
+      void channelRef.current?.send({
+        type: "broadcast",
+        event: "cursor",
+        payload: {
+          sessionId,
+          userId: selfRef.current.userId,
+          displayName: selfRef.current.displayName,
+          x: rx,
+          y: ry,
+        },
       });
     },
     [sessionId],
   );
+
+  // Merge: show only online users, with their latest broadcast position
+  const presenceUsers = useMemo<PresenceUser[]>(() => {
+    const users: PresenceUser[] = [];
+    for (const [sid, user] of onlineMap) {
+      const pos = cursorMap.get(sid) ?? { x: 0, y: 0 };
+      users.push({
+        userId: user.userId,
+        displayName: user.displayName,
+        x: pos.x,
+        y: pos.y,
+        color: colorForUser(user.userId),
+      });
+    }
+    return users;
+  }, [onlineMap, cursorMap]);
 
   return {
     presenceUsers,
