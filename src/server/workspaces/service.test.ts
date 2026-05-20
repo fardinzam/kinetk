@@ -82,6 +82,14 @@ function createWorkspaceQueries(): WorkspaceQueries & {
           member.userId === userId && member.workspaceId === workspaceId,
       );
     },
+    async userRoleForWorkspace(userId, workspaceId) {
+      return (
+        members.find(
+          (member) =>
+            member.userId === userId && member.workspaceId === workspaceId,
+        )?.role ?? null
+      );
+    },
     async listMembersForWorkspace() {
       return [];
     },

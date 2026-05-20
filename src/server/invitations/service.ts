@@ -3,6 +3,7 @@ import "server-only";
 import { nanoid } from "nanoid";
 
 import { withTransaction } from "@/server/db/pool";
+import { sendInvitationEmail } from "@/server/email/send-invitation";
 import { createWorkspaceQueries } from "@/server/workspaces/queries";
 
 import { createInvitationQueries } from "./queries";
@@ -17,6 +18,20 @@ export class InvitationAlreadyAcceptedError extends InvitationError {}
 export class DuplicateInvitationError extends InvitationError {}
 export class InvitationAccessError extends InvitationError {}
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+async function assertWorkspaceOwner(userId: string, workspaceId: string) {
+  const wq = createWorkspaceQueries();
+  const role = await wq.userRoleForWorkspace(userId, workspaceId);
+  if (role !== "owner") {
+    throw new InvitationAccessError(
+      "Only workspace owners can manage invitations",
+    );
+  }
+}
+
 export async function createInvitation(input: {
   workspaceId: string;
   invitedByUserId: string;
@@ -25,23 +40,17 @@ export async function createInvitation(input: {
   appUrl: string;
 }): Promise<{ invitationId: string; acceptUrl: string }> {
   const q = createInvitationQueries();
-  const wq = createWorkspaceQueries();
+  await assertWorkspaceOwner(input.invitedByUserId, input.workspaceId);
 
-  const canAccess = await wq.userCanAccessWorkspace(
-    input.invitedByUserId,
-    input.workspaceId,
-  );
-  if (!canAccess) {
-    throw new InvitationAccessError("You do not have access to this workspace");
-  }
+  const email = normalizeEmail(input.email);
 
   const existing = await q.findPendingInvitationByWorkspaceAndEmail(
     input.workspaceId,
-    input.email,
+    email,
   );
   if (existing) {
     throw new DuplicateInvitationError(
-      `A pending invitation for ${input.email} already exists`,
+      `A pending invitation for ${email} already exists`,
     );
   }
 
@@ -49,11 +58,24 @@ export async function createInvitation(input: {
   const invitation = await q.insertInvitation({
     workspaceId: input.workspaceId,
     invitedByUserId: input.invitedByUserId,
-    email: input.email,
+    email,
     token,
   });
 
   const acceptUrl = `${input.appUrl}/accept-invitation?token=${token}`;
+  const invitationWithWorkspace = await q.findInvitationByToken(token);
+
+  try {
+    await sendInvitationEmail({
+      toEmail: email,
+      workspaceName: invitationWithWorkspace?.workspaceName ?? "your workspace",
+      inviterEmail: input.inviterEmail,
+      acceptUrl,
+    });
+  } catch (err) {
+    console.error("[invitations] email send failed:", err);
+  }
+
   return { invitationId: invitation.id, acceptUrl };
 }
 
@@ -80,6 +102,13 @@ export async function acceptInvitation(input: {
     throw new InvitationNotFoundError("Invitation has been revoked");
   if (invitation.expiresAt < new Date())
     throw new InvitationExpiredError("Invitation has expired");
+  if (
+    normalizeEmail(input.acceptingUserEmail) !== normalizeEmail(invitation.email)
+  ) {
+    throw new InvitationAccessError(
+      "Sign in with the invited email address to accept this invitation",
+    );
+  }
 
   await withTransaction(async (db) => {
     const wq = createWorkspaceQueries(db);
@@ -106,17 +135,17 @@ export async function revokeInvitation(input: {
   requestingUserId: string;
   workspaceId: string;
 }): Promise<void> {
-  const wq = createWorkspaceQueries();
-  const canAccess = await wq.userCanAccessWorkspace(
-    input.requestingUserId,
-    input.workspaceId,
-  );
-  if (!canAccess) {
-    throw new InvitationAccessError("You do not have access to this workspace");
-  }
+  await assertWorkspaceOwner(input.requestingUserId, input.workspaceId);
 
   const q = createInvitationQueries();
-  await q.updateInvitationStatus(input.invitationId, "revoked");
+  const updated = await q.updateInvitationStatusForWorkspace(
+    input.invitationId,
+    input.workspaceId,
+    "revoked",
+  );
+  if (!updated) {
+    throw new InvitationNotFoundError("Invitation not found");
+  }
 }
 
 export async function listInvitations(input: {
