@@ -103,7 +103,8 @@ export async function acceptInvitation(input: {
   if (invitation.expiresAt < new Date())
     throw new InvitationExpiredError("Invitation has expired");
   if (
-    normalizeEmail(input.acceptingUserEmail) !== normalizeEmail(invitation.email)
+    normalizeEmail(input.acceptingUserEmail) !==
+    normalizeEmail(invitation.email)
   ) {
     throw new InvitationAccessError(
       "Sign in with the invited email address to accept this invitation",

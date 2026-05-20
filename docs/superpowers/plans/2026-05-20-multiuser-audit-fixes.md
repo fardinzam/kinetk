@@ -30,6 +30,7 @@
 ### Task 1: Invitation Query Primitives
 
 **Files:**
+
 - Modify: `src/server/invitations/queries.ts`
 - Test indirectly in: `src/server/invitations/service.test.ts` in Task 2
 
@@ -122,6 +123,7 @@ Expected: this may fail until service call sites are updated in Task 2.
 ### Task 2: Invitation Service Safety and Email Sending
 
 **Files:**
+
 - Modify: `src/server/invitations/service.ts`
 - Create: `src/server/invitations/service.test.ts`
 - Uses existing: `src/server/email/send-invitation.ts`
@@ -173,7 +175,11 @@ function membershipKey(workspaceId: string, userId: string) {
   return `${workspaceId}:${userId}`;
 }
 
-function addMember(workspaceId: string, userId: string, role: "owner" | "member") {
+function addMember(
+  workspaceId: string,
+  userId: string,
+  role: "owner" | "member",
+) {
   const users = memberships.get(workspaceId) ?? new Set<string>();
   users.add(userId);
   memberships.set(workspaceId, users);
@@ -249,7 +255,10 @@ vi.mock("./queries", () => ({
       invitation.status = status;
       return true;
     },
-    async updateInvitationStatus(invitationId: string, status: InvitationStatus) {
+    async updateInvitationStatus(
+      invitationId: string,
+      status: InvitationStatus,
+    ) {
       const invitation = invitations.find((i) => i.id === invitationId);
       if (invitation) invitation.status = status;
     },
@@ -434,7 +443,9 @@ async function assertWorkspaceOwner(userId: string, workspaceId: string) {
   const wq = createWorkspaceQueries();
   const role = await wq.userRoleForWorkspace(userId, workspaceId);
   if (role !== "owner") {
-    throw new InvitationAccessError("Only workspace owners can manage invitations");
+    throw new InvitationAccessError(
+      "Only workspace owners can manage invitations",
+    );
   }
 }
 ```
@@ -477,7 +488,9 @@ return { invitationId: invitation.id, acceptUrl };
 Update `acceptInvitation` before transaction:
 
 ```ts
-if (normalizeEmail(input.acceptingUserEmail) !== normalizeEmail(invitation.email)) {
+if (
+  normalizeEmail(input.acceptingUserEmail) !== normalizeEmail(invitation.email)
+) {
   throw new InvitationAccessError(
     "Sign in with the invited email address to accept this invitation",
   );
@@ -539,6 +552,7 @@ git commit -m "fix: harden workspace invitations"
 ### Task 3: Preserve Invitation Redirect Through Email Confirmation
 
 **Files:**
+
 - Modify: `src/components/auth/auth-form.tsx`
 - Modify: `src/components/auth/auth-form.test.tsx`
 
@@ -652,6 +666,7 @@ git commit -m "fix: preserve invite redirect after signup"
 ### Task 4: Condition Branch Edge Handles and Path Defaults
 
 **Files:**
+
 - Modify: `src/components/editor/editor-state.ts`
 - Modify: `src/components/editor/workflow-editor.tsx`
 - Modify: `src/components/editor/editor-state.test.ts`
@@ -792,12 +807,7 @@ if (
   return;
 }
 
-const next = connectNodes(
-  state,
-  connectingFromNodeId,
-  nodeId,
-  branchHandle,
-);
+const next = connectNodes(state, connectingFromNodeId, nodeId, branchHandle);
 ```
 
 Update `connectNodes` signature in `src/components/editor/editor-state.ts`:
@@ -898,6 +908,7 @@ git commit -m "fix: execute condition branches"
 ### Task 5: Kinetk Branding Cleanup
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `package.json`
 - Modify: `src/app/(app)/layout.tsx`
@@ -916,7 +927,7 @@ Apply these changes:
 ```diff
 -# FlowForge
 +# Kinetk
- 
+
 -FlowForge is a local-first webhook workflow builder for developers.
 +Kinetk is a local-first webhook workflow builder for developers.
 ```
@@ -952,6 +963,7 @@ git commit -m "chore: update Kinetk branding"
 ### Task 6: Full Verification
 
 **Files:**
+
 - No new file changes expected unless verification reveals a failure.
 
 - [ ] **Step 1: Run lint**
@@ -993,6 +1005,7 @@ npm run dev
 ```
 
 Manual checks:
+
 - Owner can create invite; email is attempted if `RESEND_API_KEY` is configured; UI still shows copyable fallback link.
 - Member cannot create or revoke invitations.
 - Owner cannot revoke an invitation in another workspace via URL tampering.
