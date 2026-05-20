@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 
 import type { PresenceUser } from "@/client/realtime/use-workflow-presence";
-import type { WorkflowGraph, WorkflowPosition, WorkflowViewport } from "@/domain/workflows/types";
+import type {
+  WorkflowGraph,
+  WorkflowPosition,
+  WorkflowViewport,
+} from "@/domain/workflows/types";
 
 import { EdgeLayer } from "./edge-layer";
 import { NodeCard } from "./node-card";
