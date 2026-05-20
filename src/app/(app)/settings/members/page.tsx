@@ -11,6 +11,7 @@ import {
 } from "@/server/workspaces/service";
 
 import { InviteForm } from "./invite-form";
+import { RemoveMemberButton, RevokeInvitationButton } from "./member-actions";
 
 export default async function MembersPage() {
   const user = await requireUser();
@@ -54,25 +55,10 @@ export default async function MembersPage() {
               {isOwner &&
                 member.userId !== user.id &&
                 member.role !== "owner" && (
-                  <form
-                    action={`/api/workspaces/${activeWorkspace.id}/members/${member.userId}`}
-                    method="POST"
-                  >
-                    <input type="hidden" name="_method" value="DELETE" />
-                    <button
-                      type="submit"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        await fetch(
-                          `/api/workspaces/${activeWorkspace.id}/members/${member.userId}`,
-                          { method: "DELETE" },
-                        );
-                        window.location.reload();
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </form>
+                  <RemoveMemberButton
+                    workspaceId={activeWorkspace.id}
+                    userId={member.userId}
+                  />
                 )}
             </li>
           ))}
@@ -91,18 +77,10 @@ export default async function MembersPage() {
                   · expires {new Date(inv.expiresAt).toLocaleDateString()}
                 </span>
                 {isOwner && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await fetch(
-                        `/api/workspaces/${activeWorkspace.id}/invitations/${inv.id}`,
-                        { method: "DELETE" },
-                      );
-                      window.location.reload();
-                    }}
-                  >
-                    Revoke
-                  </button>
+                  <RevokeInvitationButton
+                    workspaceId={activeWorkspace.id}
+                    invitationId={inv.id}
+                  />
                 )}
               </li>
             ))}
