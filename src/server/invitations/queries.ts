@@ -27,6 +27,7 @@ export type InvitationQueries = {
     email: string;
     token: string;
   }): Promise<InvitationRecord>;
+  findInvitationById(invitationId: string): Promise<InvitationRecord | null>;
   findInvitationByToken(token: string): Promise<InvitationWithWorkspace | null>;
   findInvitationsByWorkspace(workspaceId: string): Promise<InvitationRecord[]>;
   findPendingInvitationByWorkspaceAndEmail(
@@ -37,6 +38,11 @@ export type InvitationQueries = {
     invitationId: string,
     status: InvitationStatus,
   ): Promise<void>;
+  updateInvitationStatusForWorkspace(
+    invitationId: string,
+    workspaceId: string,
+    status: InvitationStatus,
+  ): Promise<boolean>;
 };
 
 function rowToRecord(row: {
@@ -87,6 +93,28 @@ export function createInvitationQueries(
       const row = result.rows[0];
       if (!row) throw new Error("Invitation insert failed");
       return rowToRecord(row);
+    },
+
+    async findInvitationById(invitationId) {
+      const result = await db.query<{
+        id: string;
+        workspace_id: string;
+        invited_by_user_id: string;
+        email: string;
+        token: string;
+        status: InvitationStatus;
+        expires_at: Date;
+        created_at: Date;
+      }>(
+        `
+          SELECT * FROM public.workspace_invitations
+          WHERE id = $1
+          LIMIT 1
+        `,
+        [invitationId],
+      );
+      const row = result.rows[0];
+      return row ? rowToRecord(row) : null;
     },
 
     async findInvitationByToken(token) {
@@ -168,6 +196,23 @@ export function createInvitationQueries(
         `,
         [invitationId, status],
       );
+    },
+
+    async updateInvitationStatusForWorkspace(
+      invitationId,
+      workspaceId,
+      status,
+    ) {
+      const result = await db.query(
+        `
+          UPDATE public.workspace_invitations
+          SET status = $3
+          WHERE id = $1
+            AND workspace_id = $2
+        `,
+        [invitationId, workspaceId, status],
+      );
+      return result.rowCount === 1;
     },
   };
 }
