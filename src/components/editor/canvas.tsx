@@ -19,7 +19,7 @@ type CanvasProps = {
   cursorPositionsRef?: React.RefObject<Map<string, { x: number; y: number }>>;
   selectedNodeId: string | null;
   nodeStatusMap?: ReadonlyMap<string, NodeStepStatus>;
-  onConnectFrom(nodeId: string): void;
+  onConnectFrom(nodeId: string, sourceHandle?: string): void;
   onConnectTo(nodeId: string): void;
   onCursorMove?: (x: number, y: number) => void;
   onDeleteEdge(edgeId: string): void;

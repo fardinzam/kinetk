@@ -43,6 +43,11 @@ type DragState = {
   offset: WorkflowPosition;
 };
 
+type ConnectingState = {
+  nodeId: string;
+  sourceHandle?: string;
+};
+
 export function WorkflowEditor({
   initialGraph,
   presenceUsers,
@@ -62,9 +67,9 @@ export function WorkflowEditor({
     canUndo,
     canRedo,
   } = useEditorHistory(initialGraph);
-  const [connectingFromNodeId, setConnectingFromNodeId] = useState<
-    string | null
-  >(null);
+  const [connectingFrom, setConnectingFrom] = useState<ConnectingState | null>(
+    null,
+  );
   const [dragState, setDragState] = useState<DragState | null>(null);
   const onLocalEventRef = useRef(onLocalEvent);
   useEffect(() => {
@@ -212,25 +217,32 @@ export function WorkflowEditor({
         onZoom={(zoom) => applyState((current) => zoomViewport(current, zoom))}
       />
       <Canvas
-        connectingFromNodeId={connectingFromNodeId}
+        connectingFromNodeId={connectingFrom?.nodeId ?? null}
         graph={state.graph}
         presenceUsers={presenceUsers}
         cursorPositionsRef={cursorPositionsRef}
         selectedNodeId={state.selectedNodeId}
         nodeStatusMap={nodeStatusMap}
-        onConnectFrom={setConnectingFromNodeId}
+        onConnectFrom={(nodeId, sourceHandle) =>
+          setConnectingFrom({ nodeId, sourceHandle })
+        }
         onCursorMove={onCursorMove}
         onConnectTo={(nodeId) => {
-          if (!connectingFromNodeId) {
+          if (!connectingFrom) {
             return;
           }
 
-          const next = connectNodes(state, connectingFromNodeId, nodeId);
+          const next = connectNodes(
+            state,
+            connectingFrom.nodeId,
+            nodeId,
+            connectingFrom.sourceHandle,
+          );
           const addedEdge = next.graph.edges.find(
             (e) => !state.graph.edges.some((f) => f.id === e.id),
           );
           applyGraphChange(() => next);
-          setConnectingFromNodeId(null);
+          setConnectingFrom(null);
           if (addedEdge) {
             onLocalEvent?.({
               clientEventId: nanoid(),

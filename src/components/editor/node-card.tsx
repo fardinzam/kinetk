@@ -9,7 +9,7 @@ type NodeCardProps = {
   isSelected: boolean;
   isConnectingFrom: boolean;
   stepStatus?: StepStatus;
-  onConnectFrom(nodeId: string): void;
+  onConnectFrom(nodeId: string, sourceHandle?: string): void;
   onConnectTo(nodeId: string): void;
   onPointerDown(nodeId: string, pointer: WorkflowPosition): void;
 };
@@ -99,6 +99,7 @@ export function NodeCard({
       <ConnectionHandles
         isConnectingFrom={isConnectingFrom}
         nodeId={node.id}
+        nodeType={node.type}
         onConnectFrom={onConnectFrom}
         onConnectTo={onConnectTo}
       />

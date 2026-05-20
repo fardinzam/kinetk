@@ -58,6 +58,22 @@ describe("editor state", () => {
     ]);
   });
 
+  it("adds condition nodes with worker-compatible path defaults", () => {
+    const state = addNode(
+      {
+        graph: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
+        selectedNodeId: null,
+      },
+      "condition",
+    );
+
+    expect(state.graph.nodes[0]).toMatchObject({
+      id: "condition_1",
+      type: "condition",
+      config: { leftPath: "current.value", operator: "exists" },
+    });
+  });
+
   it("does not add a second webhook trigger", () => {
     const state = addNode({ graph, selectedNodeId: null }, "webhook_trigger");
 
@@ -116,6 +132,43 @@ describe("editor state", () => {
     const withoutEdge = deleteEdge(connected, "edge_trigger_log_1");
 
     expect(withoutEdge.graph.edges).toEqual([]);
+  });
+
+  it("connects condition edges with source handles", () => {
+    const conditionGraph: WorkflowGraph = {
+      nodes: [
+        {
+          id: "condition",
+          type: "condition",
+          position: { x: 0, y: 0 },
+          config: { leftPath: "current.value", operator: "exists" },
+        },
+        {
+          id: "log",
+          type: "log",
+          position: { x: 200, y: 0 },
+          config: { label: "Log" },
+        },
+      ],
+      edges: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    };
+
+    const connected = connectNodes(
+      { graph: conditionGraph, selectedNodeId: null },
+      "condition",
+      "log",
+      "true",
+    );
+
+    expect(connected.graph.edges).toEqual([
+      {
+        id: "edge_condition_log_1",
+        sourceNodeId: "condition",
+        targetNodeId: "log",
+        sourceHandle: "true",
+      },
+    ]);
   });
 
   it("updates selected node config", () => {

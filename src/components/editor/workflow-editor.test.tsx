@@ -206,4 +206,36 @@ describe("WorkflowEditor", () => {
       screen.queryByLabelText("edge trigger to log"),
     ).not.toBeInTheDocument();
   });
+
+  it("emits condition branch handles when connecting condition nodes", () => {
+    const events: WorkflowEvent[] = [];
+    render(
+      <WorkflowEditor
+        initialGraph={{
+          nodes: [],
+          edges: [],
+          viewport: { x: 0, y: 0, zoom: 1 },
+        }}
+        onLocalEvent={(event) => events.push(event)}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add log" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Connect true from condition_1" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Connect to log_1" }));
+
+    expect(events.at(-1)).toMatchObject({
+      type: "edge_added",
+      payload: {
+        edge: {
+          sourceNodeId: "condition_1",
+          sourceHandle: "true",
+          targetNodeId: "log_1",
+        },
+      },
+    });
+  });
 });
