@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { nanoid } from "nanoid";
 
 import { browserSupabase } from "@/client/supabase/browser";
 
@@ -13,6 +15,7 @@ export type PresenceUser = {
 };
 
 type TrackedState = {
+  sessionId: string;
   userId: string;
   displayName: string;
   x: number;
@@ -51,6 +54,10 @@ export function useWorkflowPresence(
   const channelRef = useRef<ReturnType<
     typeof browserSupabase.channel
   > | null>(null);
+  // Stable per-tab ID so multiple tabs of the same user are distinguished.
+  // useMemo with empty deps is stable across renders (unlike useRef.current which
+  // the react-hooks/refs rule forbids during render).
+  const sessionId = useMemo(() => nanoid(), []);
   const selfRef = useRef(self);
   useEffect(() => {
     selfRef.current = self;
@@ -67,7 +74,7 @@ export function useWorkflowPresence(
       const users: PresenceUser[] = [];
       for (const presences of Object.values(state)) {
         for (const p of presences) {
-          if (p.userId === selfRef.current.userId) continue;
+          if (p.sessionId === sessionId) continue;
           users.push({
             userId: p.userId,
             displayName: p.displayName,
@@ -87,6 +94,7 @@ export function useWorkflowPresence(
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           await channel.track({
+            sessionId,
             userId: selfRef.current.userId,
             displayName: selfRef.current.displayName,
             x: 0,
@@ -99,19 +107,20 @@ export function useWorkflowPresence(
       void channel.unsubscribe();
       channelRef.current = null;
     };
-  }, [workflowId]);
+  }, [workflowId, sessionId]);
 
   const trackCursor = useCallback((x: number, y: number) => {
     const now = Date.now();
     if (now - lastTrackRef.current < 33) return;
     lastTrackRef.current = now;
     void channelRef.current?.track({
+      sessionId,
       userId: selfRef.current.userId,
       displayName: selfRef.current.displayName,
       x,
       y,
     });
-  }, []);
+  }, [sessionId]);
 
   return {
     presenceUsers,
