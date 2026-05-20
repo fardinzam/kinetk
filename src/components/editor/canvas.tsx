@@ -105,12 +105,7 @@ export function Canvas({
                 pointerEvents: "none",
               }}
             >
-              <svg
-                fill={u.color}
-                height="16"
-                viewBox="0 0 16 16"
-                width="16"
-              >
+              <svg fill={u.color} height="16" viewBox="0 0 16 16" width="16">
                 <path d="M0 0 L0 12 L4 8 L8 16 L10 15 L6 7 L12 7 Z" />
               </svg>
               <span

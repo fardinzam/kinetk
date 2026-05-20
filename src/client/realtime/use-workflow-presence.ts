@@ -51,9 +51,9 @@ export function useWorkflowPresence(
 } {
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
   const lastTrackRef = useRef<number>(0);
-  const channelRef = useRef<ReturnType<
-    typeof browserSupabase.channel
-  > | null>(null);
+  const channelRef = useRef<ReturnType<typeof browserSupabase.channel> | null>(
+    null,
+  );
   // Stable per-tab ID so multiple tabs of the same user are distinguished.
   // useMemo with empty deps is stable across renders (unlike useRef.current which
   // the react-hooks/refs rule forbids during render).
@@ -64,9 +64,7 @@ export function useWorkflowPresence(
   });
 
   useEffect(() => {
-    const channel = browserSupabase.channel(
-      `workflow-presence:${workflowId}`,
-    );
+    const channel = browserSupabase.channel(`workflow-presence:${workflowId}`);
     channelRef.current = channel;
 
     function syncPresence() {
@@ -109,18 +107,21 @@ export function useWorkflowPresence(
     };
   }, [workflowId, sessionId]);
 
-  const trackCursor = useCallback((x: number, y: number) => {
-    const now = Date.now();
-    if (now - lastTrackRef.current < 33) return;
-    lastTrackRef.current = now;
-    void channelRef.current?.track({
-      sessionId,
-      userId: selfRef.current.userId,
-      displayName: selfRef.current.displayName,
-      x,
-      y,
-    });
-  }, [sessionId]);
+  const trackCursor = useCallback(
+    (x: number, y: number) => {
+      const now = Date.now();
+      if (now - lastTrackRef.current < 33) return;
+      lastTrackRef.current = now;
+      void channelRef.current?.track({
+        sessionId,
+        userId: selfRef.current.userId,
+        displayName: selfRef.current.displayName,
+        x,
+        y,
+      });
+    },
+    [sessionId],
+  );
 
   return {
     presenceUsers,
