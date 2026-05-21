@@ -40,7 +40,7 @@ function defaultConfigForType(type: NodeType): WorkflowNode["config"] {
       return { mappings: [] };
     case "condition":
       return {
-        leftPath: "$.value",
+        leftPath: "current.value",
         operator: "exists",
       };
     case "http_request":
@@ -148,6 +148,7 @@ export function connectNodes(
   state: EditorState,
   sourceNodeId: string,
   targetNodeId: string,
+  sourceHandle?: string,
 ): EditorState {
   if (sourceNodeId === targetNodeId) {
     return state;
@@ -163,7 +164,8 @@ export function connectNodes(
     state.graph.edges.some(
       (edge) =>
         edge.sourceNodeId === sourceNodeId &&
-        edge.targetNodeId === targetNodeId,
+        edge.targetNodeId === targetNodeId &&
+        edge.sourceHandle === sourceHandle,
     )
   ) {
     return state;
@@ -179,6 +181,7 @@ export function connectNodes(
           id: nextEdgeId(state.graph, sourceNodeId, targetNodeId),
           sourceNodeId,
           targetNodeId,
+          ...(sourceHandle ? { sourceHandle } : {}),
         },
       ],
     },

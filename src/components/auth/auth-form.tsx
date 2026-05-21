@@ -27,6 +27,12 @@ export function AuthForm({ mode }: AuthFormProps) {
       env.NEXT_PUBLIC_SUPABASE_URL,
       env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
+    const next = new URLSearchParams(window.location.search).get("next");
+    const redirectTo = next && next.startsWith("/") ? next : "/workflows";
+    const emailRedirectUrl = new URL("/auth/callback", env.NEXT_PUBLIC_APP_URL);
+    if (next && next.startsWith("/")) {
+      emailRedirectUrl.searchParams.set("next", next);
+    }
 
     const result =
       mode === "sign-in"
@@ -35,7 +41,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             email,
             password,
             options: {
-              emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+              emailRedirectTo: emailRedirectUrl.toString(),
             },
           });
 
@@ -45,9 +51,6 @@ export function AuthForm({ mode }: AuthFormProps) {
       setError(result.error.message);
       return;
     }
-
-    const next = new URLSearchParams(window.location.search).get("next");
-    const redirectTo = next && next.startsWith("/") ? next : "/workflows";
 
     if (mode === "sign-up") {
       if (result.data?.session) {

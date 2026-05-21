@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/server/auth/session";
 import {
   acceptInvitation,
+  InvitationAccessError,
   InvitationNotFoundError,
   InvitationExpiredError,
   InvitationAlreadyAcceptedError,
@@ -31,6 +32,9 @@ export async function POST(_request: Request, context: RouteContext) {
     }
     if (err instanceof InvitationAlreadyAcceptedError) {
       return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+    if (err instanceof InvitationAccessError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
     }
     console.error("[invitations] accept error:", err);
     return NextResponse.json(

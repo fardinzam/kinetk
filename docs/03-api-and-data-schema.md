@@ -1,8 +1,8 @@
-# FlowForge API and Data Schema Specification
+# Kinetk API and Data Schema Specification
 
 ## 1. Purpose
 
-This document defines the backend contract for FlowForge's MVP. It exists to keep the frontend, backend, sync engine, and worker aligned before implementation starts.
+This document defines the backend contract for Kinetk's MVP. It exists to keep the frontend, backend, sync engine, and worker aligned before implementation starts.
 
 Primary guarantees:
 

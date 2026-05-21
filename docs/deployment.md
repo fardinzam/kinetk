@@ -1,6 +1,6 @@
 # Deployment Guide
 
-FlowForge has two processes that must be deployed separately:
+Kinetk has two processes that must be deployed separately:
 
 | Process    | Description                         | Platform                  |
 | ---------- | ----------------------------------- | ------------------------- |
@@ -32,8 +32,8 @@ Both share the same environment variables and connect to the same Supabase proje
    Or paste the contents of `supabase/migrations/0001_initial_schema.sql` into the Supabase SQL editor and run it.
 
 3. In the Supabase dashboard, go to **Authentication → URL Configuration** and set:
-   - **Site URL**: your production app URL (e.g. `https://flowforge.vercel.app`)
-   - **Redirect URLs**: `https://flowforge.vercel.app/auth/callback`
+   - **Site URL**: your production app URL (e.g. `https://kinetk.vercel.app`)
+   - **Redirect URLs**: `https://kinetk.vercel.app/auth/callback`
 
 4. Collect the following values from **Project Settings → API**:
    - `NEXT_PUBLIC_SUPABASE_URL`

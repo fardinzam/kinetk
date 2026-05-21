@@ -1,8 +1,8 @@
-# FlowForge System Architecture
+# Kinetk System Architecture
 
 ## 1. Overview
 
-FlowForge is a local-first visual workflow builder backed by an event-log sync system and an asynchronous workflow execution engine.
+Kinetk is a local-first visual workflow builder backed by an event-log sync system and an asynchronous workflow execution engine.
 
 The browser owns immediate editing responsiveness. The backend owns authorization, durable sync ordering, webhook trigger security, workflow execution, and run observability.
 

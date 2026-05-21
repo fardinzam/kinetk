@@ -1,10 +1,10 @@
-# FlowForge Product Requirements Document
+# Kinetk Product Requirements Document
 
 ## 1. Problem Statement
 
 Developers who build and debug webhook integrations need a fast way to model small automation workflows, trigger them with real HTTP payloads, and inspect exactly what happened at each step. Existing automation tools often hide execution details behind high-level success or failure states, while developer-built scripts lack visual structure, collaboration, and persistent run history.
 
-FlowForge exists to provide a local-first visual workflow builder for webhook automation with transparent, step-level execution debugging.
+Kinetk exists to provide a local-first visual workflow builder for webhook automation with transparent, step-level execution debugging.
 
 ## 2. Product Goal
 

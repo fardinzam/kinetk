@@ -35,7 +35,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <main>
-      <nav aria-label="FlowForge app navigation">
+      <nav aria-label="Kinetk app navigation">
         <Link href="/workflows">Workflows</Link>
         <WorkspaceSwitcher
           currentWorkspace={activeWorkspace}

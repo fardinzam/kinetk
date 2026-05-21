@@ -40,6 +40,10 @@ export type WorkspaceQueries = {
   }): Promise<void>;
   listWorkspacesForUser(userId: string): Promise<WorkspaceSummary[]>;
   userCanAccessWorkspace(userId: string, workspaceId: string): Promise<boolean>;
+  userRoleForWorkspace(
+    userId: string,
+    workspaceId: string,
+  ): Promise<WorkspaceRole | null>;
   listMembersForWorkspace(workspaceId: string): Promise<WorkspaceMember[]>;
   removeWorkspaceMember(workspaceId: string, userId: string): Promise<void>;
 };
@@ -146,6 +150,19 @@ export function createWorkspaceQueries(
       );
 
       return result.rows[0]?.exists ?? false;
+    },
+    async userRoleForWorkspace(userId, workspaceId) {
+      const result = await db.query<{ role: WorkspaceRole }>(
+        `
+          select role
+          from public.workspace_members
+          where user_id = $1 and workspace_id = $2
+          limit 1
+        `,
+        [userId, workspaceId],
+      );
+
+      return result.rows[0]?.role ?? null;
     },
     async listMembersForWorkspace(workspaceId) {
       const result = await db.query<{

@@ -1,6 +1,6 @@
-# FlowForge
+# Kinetk
 
-FlowForge is a local-first webhook workflow builder for developers.
+Kinetk is a local-first webhook workflow builder for developers.
 
 The goal is to build a production-minded workflow tool that demonstrates complex frontend state, tenant-safe backend design, event-log synchronization, background execution, and step-level observability.
 

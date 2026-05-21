@@ -4,6 +4,7 @@ import { requireUser } from "@/server/auth/session";
 import {
   revokeInvitation,
   InvitationAccessError,
+  InvitationNotFoundError,
 } from "@/server/invitations/service";
 
 type RouteContext = {
@@ -22,7 +23,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
     });
     return new Response(null, { status: 204 });
   } catch (err) {
-    if (err instanceof InvitationAccessError) {
+    if (
+      err instanceof InvitationAccessError ||
+      err instanceof InvitationNotFoundError
+    ) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     console.error("[invitations] DELETE error:", err);

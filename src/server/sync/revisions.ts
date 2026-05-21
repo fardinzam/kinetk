@@ -27,7 +27,7 @@ export async function fetchWorkflowSyncState(
       select workspace_id, name, schema_version, version, current_state_json
       from public.workflows
       where id = $1 and deleted_at is null
-      limit 1
+      for update
     `,
     [workflowId],
   );

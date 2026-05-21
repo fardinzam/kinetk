@@ -37,6 +37,11 @@ export type InvitationQueries = {
     invitationId: string,
     status: InvitationStatus,
   ): Promise<void>;
+  updateInvitationStatusForWorkspace(
+    invitationId: string,
+    workspaceId: string,
+    status: InvitationStatus,
+  ): Promise<boolean>;
 };
 
 function rowToRecord(row: {
@@ -168,6 +173,23 @@ export function createInvitationQueries(
         `,
         [invitationId, status],
       );
+    },
+
+    async updateInvitationStatusForWorkspace(
+      invitationId,
+      workspaceId,
+      status,
+    ) {
+      const result = await db.query(
+        `
+          UPDATE public.workspace_invitations
+          SET status = $3
+          WHERE id = $1
+            AND workspace_id = $2
+        `,
+        [invitationId, workspaceId, status],
+      );
+      return result.rowCount === 1;
     },
   };
 }
