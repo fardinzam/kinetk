@@ -6,17 +6,17 @@
 
 ## Project Overview
 
-Kinetk is a **local-first webhook workflow builder** for developers. It solves the fragmented debugging experience of webhook-driven automation: most tools offer either a visual editor *or* step-level observability, never both. Kinetk provides a fast, offline-capable canvas where developers design execution graphs locally, syncs changes through an append-only event log to a shared Postgres backend, and delivers step-level input/output/error snapshots for every node in every execution run.
+Kinetk is a **local-first webhook workflow builder** for developers. It solves the fragmented debugging experience of webhook-driven automation: most tools offer either a visual editor _or_ step-level observability, never both. Kinetk provides a fast, offline-capable canvas where developers design execution graphs locally, syncs changes through an append-only event log to a shared Postgres backend, and delivers step-level input/output/error snapshots for every node in every execution run.
 
 The system proves one complete vertical slice end-to-end: a user designs a multi-node workflow on a local canvas → changes persist immediately to IndexedDB → events sync to the backend through a conflict-safe log → a secure webhook trigger starts a run → a background worker claims and executes each node in isolation → the user inspects full run history and per-step observability.
 
 ## Tech Stack
 
-| Frontend | Backend | Infrastructure | Testing |
-|---|---|---|---|
-| ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white) | ![Next.js](https://img.shields.io/badge/-Next.js%20API%20Routes-black?logo=next.js) | ![Vercel](https://img.shields.io/badge/-Vercel-black?logo=vercel) | ![Vitest](https://img.shields.io/badge/-Vitest-6E9F18?logo=vitest&logoColor=white) |
-| ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white) | ![Supabase](https://img.shields.io/badge/-Supabase%20(PG%20%2B%20Auth%20%2B%20Realtime)-3FCF8E?logo=supabase&logoColor=white) | ![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white) | |
-| ![IndexedDB](https://img.shields.io/badge/-IndexedDB%20(local--first)-F6820D) | ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL%20(pgvector%20%2B%20RLS)-4169E1?logo=postgresql&logoColor=white) | | |
+| Frontend                                                                                       | Backend                                                                                                                         | Infrastructure                                                                                              | Testing                                                                            |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white)                | ![Next.js](https://img.shields.io/badge/-Next.js%20API%20Routes-black?logo=next.js)                                             | ![Vercel](https://img.shields.io/badge/-Vercel-black?logo=vercel)                                           | ![Vitest](https://img.shields.io/badge/-Vitest-6E9F18?logo=vitest&logoColor=white) |
+| ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white) | ![Supabase](<https://img.shields.io/badge/-Supabase%20(PG%20%2B%20Auth%20%2B%20Realtime)-3FCF8E?logo=supabase&logoColor=white>) | ![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white) |                                                                                    |
+| ![IndexedDB](<https://img.shields.io/badge/-IndexedDB%20(local--first)-F6820D>)                | ![PostgreSQL](<https://img.shields.io/badge/-PostgreSQL%20(pgvector%20%2B%20RLS)-4169E1?logo=postgresql&logoColor=white>)       |                                                                                                             |                                                                                    |
 
 ## High-Level System Design
 
@@ -89,10 +89,9 @@ useEffect(() => {
     const vp = viewportRef.current;
     for (const { sessionId } of presenceUsers) {
       const pos = cursorPositionsRef.current?.get(sessionId);
-      const el  = domRefs.current.get(sessionId);
+      const el = domRefs.current.get(sessionId);
       if (!pos || !el) continue;
-      el.style.transform =
-        `translate(${pos.x * vp.zoom + vp.x - 2}px, ${pos.y * vp.zoom + vp.y - 2}px)`;
+      el.style.transform = `translate(${pos.x * vp.zoom + vp.x - 2}px, ${pos.y * vp.zoom + vp.y - 2}px)`;
     }
     rafId = requestAnimationFrame(tick);
   }
@@ -116,13 +115,17 @@ Duplicate events — caused by network retries — are handled by `findExistingR
 // server/sync/service.ts — conflict detection inside a serializable transaction
 if (input.baseServerRevision !== syncState.currentVersion) {
   throw new SyncRevisionConflictError(
-    syncState.currentVersion,   // what the server holds
-    input.baseServerRevision,   // what the client sent
+    syncState.currentVersion, // what the server holds
+    input.baseServerRevision, // what the client sent
   );
 }
 
 // Idempotency: skip events the log has already committed
-const existingRevisions = await findExistingRevisions(txDb, workflowId, clientEventIds);
+const existingRevisions = await findExistingRevisions(
+  txDb,
+  workflowId,
+  clientEventIds,
+);
 const newEvents = input.events.filter(
   (e) => !existingRevisions.has(e.clientEventId),
 );
@@ -223,7 +226,10 @@ void channel.send({
 // Receiver: writes to a mutable ref — zero React re-renders
 channel.on("broadcast", { event: "cursor" }, ({ payload }) => {
   if (payload.sessionId === sessionId) return;
-  cursorPositionsRef.current.set(payload.sessionId, { x: payload.x, y: payload.y });
+  cursorPositionsRef.current.set(payload.sessionId, {
+    x: payload.x,
+    y: payload.y,
+  });
 });
 ```
 
