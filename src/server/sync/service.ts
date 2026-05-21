@@ -34,6 +34,14 @@ export type SyncOutput = {
 export class WorkflowSyncError extends Error {}
 export class SyncAccessError extends WorkflowSyncError {}
 export class WorkflowNotFoundForSyncError extends WorkflowSyncError {}
+export class SyncRevisionConflictError extends WorkflowSyncError {
+  constructor(
+    readonly expectedRevision: number,
+    readonly receivedRevision: number,
+  ) {
+    super("refresh_required");
+  }
+}
 
 export async function syncWorkflowEvents(
   input: SyncInput,
@@ -55,6 +63,13 @@ export async function syncWorkflowEvents(
     if (!canAccess) {
       throw new SyncAccessError(
         `User ${input.userId} cannot access workflow ${input.workflowId}`,
+      );
+    }
+
+    if (input.baseServerRevision !== syncState.currentVersion) {
+      throw new SyncRevisionConflictError(
+        syncState.currentVersion,
+        input.baseServerRevision,
       );
     }
 

@@ -6,6 +6,7 @@ import { requireUser } from "@/server/auth/session";
 import {
   syncWorkflowEvents,
   SyncAccessError,
+  SyncRevisionConflictError,
   WorkflowNotFoundForSyncError,
 } from "@/server/sync/service";
 
@@ -44,6 +45,16 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Workflow not found" },
         { status: 404 },
+      );
+    }
+
+    if (error instanceof SyncRevisionConflictError) {
+      return NextResponse.json(
+        {
+          error: "refresh_required",
+          latestRevision: error.expectedRevision,
+        },
+        { status: 409 },
       );
     }
 
