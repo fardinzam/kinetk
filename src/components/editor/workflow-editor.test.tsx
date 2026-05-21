@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { WorkflowEditor } from "./workflow-editor";
 import type { WorkflowEvent } from "@/domain/workflows/events";
@@ -186,6 +186,64 @@ describe("WorkflowEditor", () => {
     expect(
       screen.queryByLabelText("edge trigger to log"),
     ).not.toBeInTheDocument();
+  });
+
+  it("keeps node drag visual-only until pointerup commits the move", () => {
+    const events: WorkflowEvent[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      });
+    const cancelAnimationFrameSpy = vi
+      .spyOn(window, "cancelAnimationFrame")
+      .mockImplementation(() => undefined);
+
+    render(
+      <WorkflowEditor
+        initialGraph={seededGraph}
+        onLocalEvent={(event) => events.push(event)}
+      />,
+    );
+
+    const logNode = screen.getByRole("button", { name: "log log" });
+    fireEvent.pointerDown(logNode, {
+      pointerId: 1,
+      clientX: 360,
+      clientY: 72,
+    });
+    fireEvent.pointerMove(window, {
+      pointerId: 1,
+      clientX: 420,
+      clientY: 120,
+    });
+
+    expect(screen.getByTestId("node-log")).toHaveAttribute(
+      "data-position",
+      "360,72",
+    );
+    expect(screen.getByTestId("node-log")).toHaveStyle(
+      "transform: translate3d(60px, 48px, 0)",
+    );
+    expect(events).toHaveLength(0);
+
+    fireEvent.pointerUp(window, { pointerId: 1 });
+
+    expect(screen.getByTestId("node-log")).toHaveAttribute(
+      "data-position",
+      "420,120",
+    );
+    expect(events.at(-1)).toMatchObject({
+      type: "node_moved",
+      payload: {
+        nodeId: "log",
+        position: { x: 420, y: 120 },
+      },
+    });
+
+    requestAnimationFrameSpy.mockRestore();
+    cancelAnimationFrameSpy.mockRestore();
   });
 
   it("connects nodes with handles and deletes edges", () => {

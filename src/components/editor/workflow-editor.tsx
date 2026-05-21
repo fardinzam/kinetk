@@ -40,7 +40,12 @@ type WorkflowEditorProps = {
 
 type DragState = {
   nodeId: string;
+  nodeEl: HTMLElement;
+  startPosition: WorkflowPosition;
+  latestPosition: WorkflowPosition;
   offset: WorkflowPosition;
+  rafId: number | null;
+  dirty: boolean;
 };
 
 type ConnectingState = {
@@ -70,10 +75,14 @@ export function WorkflowEditor({
   const [connectingFrom, setConnectingFrom] = useState<ConnectingState | null>(
     null,
   );
-  const [dragState, setDragState] = useState<DragState | null>(null);
+  const dragStateRef = useRef<DragState | null>(null);
+  const graphRef = useRef(state.graph);
+  const applyGraphChangeRef = useRef(applyGraphChange);
   const onLocalEventRef = useRef(onLocalEvent);
   useEffect(() => {
     onLocalEventRef.current = onLocalEvent;
+    applyGraphChangeRef.current = applyGraphChange;
+    graphRef.current = state.graph;
   });
 
   const nodesById = useMemo(
@@ -88,7 +97,11 @@ export function WorkflowEditor({
     [state.graph],
   );
 
-  function handleNodePointerDown(nodeId: string, pointer: WorkflowPosition) {
+  function handleNodePointerDown(
+    nodeId: string,
+    pointer: WorkflowPosition,
+    nodeEl: HTMLElement,
+  ) {
     const node = nodesById.get(nodeId);
 
     if (!node) {
@@ -98,62 +111,109 @@ export function WorkflowEditor({
     const { zoom, x: vpX, y: vpY } = state.graph.viewport;
     snapshotGraph();
     applyState((current) => selectNode(current, nodeId));
-    setDragState({
+
+    nodeEl.style.willChange = "transform";
+    nodeEl.style.cursor = "grabbing";
+
+    dragStateRef.current = {
       nodeId,
+      nodeEl,
+      startPosition: { ...node.position },
+      latestPosition: { ...node.position },
       offset: {
         x: pointer.x - node.position.x * zoom - vpX,
         y: pointer.y - node.position.y * zoom - vpY,
       },
-    });
+      rafId: null,
+      dirty: false,
+    };
   }
 
   useEffect(() => {
-    if (!dragState) {
-      return;
+    function scheduleDragPaint(activeDrag: DragState) {
+      if (activeDrag.rafId !== null) {
+        return;
+      }
+
+      activeDrag.rafId = requestAnimationFrame(() => {
+        activeDrag.rafId = null;
+
+        const deltaX = activeDrag.latestPosition.x - activeDrag.startPosition.x;
+        const deltaY = activeDrag.latestPosition.y - activeDrag.startPosition.y;
+
+        activeDrag.nodeEl.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+      });
     }
 
-    const activeDrag = dragState;
-
     function handlePointerMove(event: PointerEvent) {
-      applyState((current) =>
-        moveNode(current, activeDrag.nodeId, {
-          x:
-            (event.clientX - activeDrag.offset.x - current.graph.viewport.x) /
-            current.graph.viewport.zoom,
-          y:
-            (event.clientY - activeDrag.offset.y - current.graph.viewport.y) /
-            current.graph.viewport.zoom,
-        }),
-      );
+      const activeDrag = dragStateRef.current;
+      if (!activeDrag) {
+        return;
+      }
+
+      const viewport = graphRef.current.viewport;
+      activeDrag.latestPosition = {
+        x: (event.clientX - activeDrag.offset.x - viewport.x) / viewport.zoom,
+        y: (event.clientY - activeDrag.offset.y - viewport.y) / viewport.zoom,
+      };
+      activeDrag.dirty = true;
+      scheduleDragPaint(activeDrag);
     }
 
     function handlePointerUp() {
-      applyState((current) => {
-        const node = current.graph.nodes.find(
-          (n) => n.id === activeDrag.nodeId,
-        );
-        if (node) {
-          onLocalEventRef.current?.({
-            clientEventId: nanoid(),
-            type: "node_moved",
-            eventSchemaVersion: 1,
-            payload: { nodeId: node.id, position: node.position },
-            createdAt: new Date().toISOString(),
-          });
-        }
-        return current;
+      const activeDrag = dragStateRef.current;
+      if (!activeDrag) {
+        return;
+      }
+
+      dragStateRef.current = null;
+
+      if (activeDrag.rafId !== null) {
+        cancelAnimationFrame(activeDrag.rafId);
+      }
+
+      activeDrag.nodeEl.style.transform = "";
+      activeDrag.nodeEl.style.willChange = "";
+      activeDrag.nodeEl.style.cursor = "";
+
+      if (!activeDrag.dirty) {
+        return;
+      }
+
+      const finalPosition = { ...activeDrag.latestPosition };
+      applyGraphChangeRef.current((current) =>
+        moveNode(current, activeDrag.nodeId, finalPosition),
+      );
+      onLocalEventRef.current?.({
+        clientEventId: nanoid(),
+        type: "node_moved",
+        eventSchemaVersion: 1,
+        payload: { nodeId: activeDrag.nodeId, position: finalPosition },
+        createdAt: new Date().toISOString(),
       });
-      setDragState(null);
     }
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+
+      const activeDrag = dragStateRef.current;
+      if (activeDrag?.rafId !== null && activeDrag?.rafId !== undefined) {
+        cancelAnimationFrame(activeDrag.rafId);
+      }
+      if (activeDrag) {
+        activeDrag.nodeEl.style.transform = "";
+        activeDrag.nodeEl.style.willChange = "";
+        activeDrag.nodeEl.style.cursor = "";
+      }
+      dragStateRef.current = null;
     };
-  }, [dragState]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section aria-label="Workflow editor">

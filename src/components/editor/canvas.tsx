@@ -23,7 +23,11 @@ type CanvasProps = {
   onConnectTo(nodeId: string): void;
   onCursorMove?: (x: number, y: number) => void;
   onDeleteEdge(edgeId: string): void;
-  onNodePointerDown(nodeId: string, pointer: WorkflowPosition): void;
+  onNodePointerDown(
+    nodeId: string,
+    pointer: WorkflowPosition,
+    nodeEl: HTMLElement,
+  ): void;
 };
 
 type CursorOverlayProps = {

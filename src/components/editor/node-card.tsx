@@ -11,7 +11,11 @@ type NodeCardProps = {
   stepStatus?: StepStatus;
   onConnectFrom(nodeId: string, sourceHandle?: string): void;
   onConnectTo(nodeId: string): void;
-  onPointerDown(nodeId: string, pointer: WorkflowPosition): void;
+  onPointerDown(
+    nodeId: string,
+    pointer: WorkflowPosition,
+    nodeEl: HTMLElement,
+  ): void;
 };
 
 function formatNodeType(type: string): string {
@@ -36,10 +40,15 @@ export function NodeCard({
       data-testid={`node-${node.id}`}
       onPointerDown={(event) => {
         event.preventDefault();
-        onPointerDown(node.id, {
-          x: event.clientX,
-          y: event.clientY,
-        });
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        onPointerDown(
+          node.id,
+          {
+            x: event.clientX,
+            y: event.clientY,
+          },
+          event.currentTarget,
+        );
       }}
       role="button"
       style={{
